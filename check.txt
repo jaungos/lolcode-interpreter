@@ -1,0 +1,468 @@
+Tokens:
+	single-line_comment_delimiter: BTW
+	comment_literal: some comments before program
+	program_start_delimiter: HAI
+	single-line_comment_delimiter: BTW
+	comment_literal: Variable declaration section
+	variable_declaration_start_delimiter: WAZZUP
+	variable_declaration_keyword: I HAS A
+	identifiers: thing
+	single-line_comment_delimiter: BTW
+	comment_literal: uninitialized var
+	variable_declaration_keyword: I HAS A
+	identifiers: thing2
+	variable_assignment_keyword: ITZ
+	string_delimiter: "
+	string_literal: Hello World
+	string_delimiter: "
+	single-line_comment_delimiter: BTW
+	comment_literal: literal
+	variable_declaration_keyword: I HAS A
+	identifiers: thing6
+	variable_assignment_keyword: ITZ
+	string_delimiter: "
+	string_literal: Pancit Canton
+	string_delimiter: "
+	variable_declaration_keyword: I HAS A
+	identifiers: thing7
+	variable_assignment_keyword: ITZ
+	string_delimiter: "
+	string_literal: omstrue
+	string_delimiter: "
+	variable_declaration_keyword: I HAS A
+	identifiers: thing3
+	variable_assignment_keyword: ITZ
+	identifiers: thing2
+	single-line_comment_delimiter: BTW
+	comment_literal: variable
+	variable_declaration_keyword: I HAS A
+	identifiers: thing4
+	variable_assignment_keyword: ITZ
+	arithmetic_operator: SUM OF
+	integer_data_type: 5
+	function_parameter_keyword: AN
+	integer_data_type: 4
+	single-line_comment_delimiter: BTW
+	comment_literal: expression
+	variable_declaration_keyword: I HAS A
+	identifiers: name
+	variable_declaration_keyword: I HAS A
+	identifiers: result1
+	variable_declaration_keyword: I HAS A
+	identifiers: result2
+	variable_declaration_keyword: I HAS A
+	identifiers: result3
+	variable_declaration_keyword: I HAS A
+	identifiers: result4
+	variable_declaration_keyword: I HAS A
+	identifiers: int1
+	variable_assignment_keyword: ITZ
+	integer_data_type: 5
+	variable_declaration_keyword: I HAS A
+	identifiers: int2
+	variable_assignment_keyword: ITZ
+	integer_data_type: 3
+	variable_declaration_keyword: I HAS A
+	identifiers: int3
+	variable_assignment_keyword: ITZ
+	integer_data_type: 0
+	variable_declaration_keyword: I HAS A
+	identifiers: float1
+	variable_assignment_keyword: ITZ
+	float_data_type: 4.3
+	variable_declaration_keyword: I HAS A
+	identifiers: float2
+	variable_assignment_keyword: ITZ
+	float_data_type: 0.2
+	variable_declaration_keyword: I HAS A
+	identifiers: string1
+	variable_declaration_keyword: I HAS A
+	identifiers: string2
+	variable_declaration_keyword: I HAS A
+	identifiers: bool1
+	variable_assignment_keyword: ITZ
+	boolean_data_type: WIN
+	variable_declaration_keyword: I HAS A
+	identifiers: bool2
+	variable_assignment_keyword: ITZ
+	logical_operator: NOT
+	boolean_data_type: WIN
+	variable_declaration_keyword: I HAS A
+	identifiers: userInput
+	variable_declaration_end_delimiter: BUHBYE
+	print_keyword: VISIBLE
+	identifiers: thing2
+	visible_concatenate_operator: +
+	identifiers: thing6
+	single-line_comment_delimiter: BTW
+	comment_literal: Should print "Hello WorldPancit Canton\n"
+	print_keyword: VISIBLE
+	string_delimiter: "
+	string_literal: What is your name?
+	string_delimiter: "
+	input_keyword: GIMMEH
+	identifiers: name
+	print_keyword: VISIBLE
+	identifiers: thing2
+	visible_concatenate_operator: +
+	string_delimiter: "
+	string_literal:  
+	string_delimiter: "
+	visible_concatenate_operator: +
+	identifiers: name
+	single-line_comment_delimiter: BTW
+	comment_literal: prints "Hello World {name}"
+	single-line_comment_delimiter: BTW
+	comment_literal: testing arithmetic shits ------------------
+	identifiers: result1
+	variable_assignment_keyword: R
+	arithmetic_operator: SUM OF
+	integer_data_type: 12
+	function_parameter_keyword: AN
+	identifiers: int2
+	single-line_comment_delimiter: BTW
+	comment_literal: result1 (15) = 12 + int2(3)
+	print_keyword: VISIBLE
+	arithmetic_operator: DIFF OF
+	identifiers: int1
+	function_parameter_keyword: AN
+	identifiers: int2
+	single-line_comment_delimiter: BTW
+	comment_literal: prints "2\n"
+	opening_multi-line_comment_delimiter: OBTW
+	comment_literal:  Dumarami na ang gumagaling sa Sid Herbal Capsule! Ako po si Antonio Dela Cruz from Nothern Cotabato, dati po sumakit likod ko pero ngayon gumaling na dahil sa Sid Panyawan. Mabibili sa lahat ng drugstores, nationwide!
+	closing_multi-line_comment_delimiter: TLDR
+	identifiers: result2
+	variable_assignment_keyword: R
+	arithmetic_operator: PRODUKT OF
+	string_delimiter: "
+	string_literal: 2
+	string_delimiter: "
+	function_parameter_keyword: AN
+	string_delimiter: "
+	string_literal: 7
+	string_delimiter: "
+	single-line_comment_delimiter: BTW
+	comment_literal: result2 (14) = (int) 2 * (int) 7
+	identifiers: result3
+	variable_assignment_keyword: R
+	arithmetic_operator: SUM OF
+	arithmetic_operator: QUOSHUNT OF
+	arithmetic_operator: PRODUKT OF
+	identifiers: int1
+	function_parameter_keyword: AN
+	identifiers: result2
+	function_parameter_keyword: AN
+	identifiers: result1
+	function_parameter_keyword: AN
+	identifiers: int2
+	print_keyword: VISIBLE
+	arithmetic_operator: QUOSHUNT OF
+	float_data_type: 0.32
+	function_parameter_keyword: AN
+	identifiers: int3
+	single-line_comment_delimiter: BTW
+	comment_literal: should result into an error (div by zero)
+	single-line_comment_delimiter: BTW
+	comment_literal: testing string shits --------------------
+	identifiers: string1
+	variable_assignment_keyword: R
+	concatenation_operator: SMOOSH
+	identifiers: thing6
+	function_parameter_keyword: AN
+	identifiers: name
+	function_parameter_keyword: AN
+	string_delimiter: "
+	string_literal: wowers
+	string_delimiter: "
+	function_parameter_keyword: AN
+	string_delimiter: "
+	string_literal: \n
+	string_delimiter: "
+	function_parameter_keyword: AN
+	identifiers: thing7
+	identifiers: string2
+	variable_assignment_keyword: R
+	concatenation_operator: SMOOSH
+	integer_data_type: 45
+	function_parameter_keyword: AN
+	integer_data_type: 32
+	function_parameter_keyword: AN
+	float_data_type: 12.3
+	function_parameter_keyword: AN
+	boolean_data_type: WIN
+	function_parameter_keyword: AN
+	string_delimiter: "
+	string_literal: uy
+	string_delimiter: "
+	function_parameter_keyword: AN
+	boolean_data_type: FAIL
+	function_parameter_keyword: AN
+	string_delimiter: "
+	string_literal: watsgood
+	string_delimiter: "
+	print_keyword: VISIBLE
+	concatenation_operator: SMOOSH
+	string_delimiter: "
+	string_literal: hello
+	string_delimiter: "
+	function_parameter_keyword: AN
+	string_delimiter: "
+	string_literal: worl:)d
+	string_delimiter: "
+	function_parameter_keyword: AN
+	string_delimiter: "
+	string_literal: uy\t tabs!
+	string_delimiter: "
+	function_parameter_keyword: AN
+	integer_data_type: 45
+	single-line_comment_delimiter: BTW
+	comment_literal: testing boolean shits -----------------
+	identifiers: bool1
+	variable_assignment_keyword: R
+	logical_operator: ALL OF
+	logical_operator: NOT
+	boolean_data_type: WIN
+	function_parameter_keyword: AN
+	logical_operator: BOTH OF
+	boolean_data_type: WIN
+	function_parameter_keyword: AN
+	identifiers: bool1
+	function_parameter_keyword: AN
+	logical_operator: EITHER OF
+	boolean_data_type: FAIL
+	function_parameter_keyword: AN
+	boolean_data_type: WIN
+	function_parameter_keyword: MKAY
+	print_keyword: VISIBLE
+	identifiers: bool1
+	logical_operator: WON OF
+	boolean_data_type: WIN
+	function_parameter_keyword: AN
+	identifiers: thing
+	identifiers: bool2
+	logical_operator: ANY OF
+	identifiers: bool1
+	function_parameter_keyword: AN
+	identifiers: bool2
+	function_parameter_keyword: AN
+	logical_operator: NOT
+	logical_operator: EITHER OF
+	boolean_data_type: WIN
+	function_parameter_keyword: AN
+	identifiers: bool1
+	function_parameter_keyword: MKAY
+	print_keyword: VISIBLE
+	comparison_operator: BOTH SAEM
+	integer_data_type: 3
+	function_parameter_keyword: AN
+	integer_data_type: 5
+	print_keyword: VISIBLE
+	comparison_operator: DIFFRINT
+	integer_data_type: 4
+	function_parameter_keyword: AN
+	integer_data_type: 4
+	comparison_operator: BOTH SAEM
+	integer_data_type: 5
+	function_parameter_keyword: AN
+	arithmetic_operator: BIGGR OF
+	integer_data_type: 43
+	function_parameter_keyword: AN
+	integer_data_type: 2
+	comparison_operator: BOTH SAEM
+	integer_data_type: -45
+	function_parameter_keyword: AN
+	arithmetic_operator: SMALLR OF
+	integer_data_type: -3
+	function_parameter_keyword: AN
+	integer_data_type: 0
+	comparison_operator: DIFFRINT
+	float_data_type: 0.123
+	function_parameter_keyword: AN
+	arithmetic_operator: SMALLR OF
+	float_data_type: 3.14
+	function_parameter_keyword: AN
+	float_data_type: 234.123
+	comparison_operator: DIFFRINT
+	float_data_type: 45.12
+	function_parameter_keyword: AN
+	arithmetic_operator: BIGGR OF
+	float_data_type: 67.0
+	function_parameter_keyword: AN
+	float_data_type: 0.0
+	opening_multi-line_comment_delimiter: OBTW
+	comment_literal:  tpelk zpnuhsz ??????
+	closing_multi-line_comment_delimiter: TLDR
+	single-line_comment_delimiter: BTW
+	comment_literal: typecasting
+	single-line_comment_delimiter: BTW
+	comment_literal: does not do anything, stores val to IT
+	type_casting_operator: MAEK
+	identifiers: thing
+	identifiers: a
+	type_literal: TROOF
+	identifiers: MAKE
+	identifiers: thing4
+	identifiers: a
+	type_literal: NUMBR
+	identifiers: thing4
+	type_casting_operator: IS NOW A
+	type_literal: NUMBR
+	identifiers: float2
+	variable_assignment_keyword: R
+	type_casting_operator: MAEK
+	identifiers: float2
+	type_literal: NUMBAR
+	single-line_comment_delimiter: BTW
+	comment_literal: us2 q ma2log
+	comparison_operator: BOTH SAEM
+	arithmetic_operator: SUM OF
+	integer_data_type: 3
+	function_parameter_keyword: AN
+	integer_data_type: 2
+	function_parameter_keyword: AN
+	integer_data_type: 5
+	opening_conditional_statement_delimiter: O RLY?
+	alternative_conditional_statement_delimiter: YA RLY
+	print_keyword: VISIBLE
+	string_delimiter: "
+	string_literal: i can do math
+	string_delimiter: "
+	alternative_conditional_statement_delimiter: NO WAI
+	print_keyword: VISIBLE
+	string_delimiter: "
+	string_literal: i can't do math
+	string_delimiter: "
+	closing_conditional_statement_delimiter: OIC
+	print_keyword: VISIBLE
+	string_delimiter: "
+	string_literal: hello crush m b aq
+	string_delimiter: "
+	input_keyword: GIMMEH
+	identifiers: userInput
+	identifiers: IT
+	variable_assignment_keyword: R
+	identifiers: userInput
+	single-line_comment_delimiter: BTW
+	comment_literal: switch case
+	opening_switch_statement_delimiter: WTF?
+	single-line_comment_delimiter: BTW
+	comment_literal: omsim wtf indeed
+	alternative_switch_statement_delimiter: OMG
+	string_delimiter: "
+	string_literal: oo
+	string_delimiter: "
+	print_keyword: VISIBLE
+	string_delimiter: "
+	string_literal: weh haha omsame
+	string_delimiter: "
+	alternative_switch_statement_delimiter: OMG
+	string_delimiter: "
+	string_literal: dehins
+	string_delimiter: "
+	print_keyword: VISIBLE
+	string_delimiter: "
+	string_literal: awts may gamot gege lods
+	string_delimiter: "
+	alternative_switch_statement_delimiter: OMG
+	string_delimiter: "
+	string_literal: minsan lng
+	string_delimiter: "
+	print_keyword: VISIBLE
+	string_delimiter: "
+	string_literal: sna cnaksak m n lng aq noh
+	string_delimiter: "
+	alternative_switch_statement_delimiter: OMG
+	string_delimiter: "
+	string_literal: mhal n kita
+	string_delimiter: "
+	print_keyword: VISIBLE
+	string_delimiter: "
+	string_literal: when kasal
+	string_delimiter: "
+	alternative_switch_statement_delimiter: OMG
+	identifiers: TF
+	print_keyword: VISIBLE
+	string_delimiter: "
+	string_literal: silencio means yes
+	string_delimiter: "
+	closing_conditional_statement_delimiter: OIC
+	variable_declaration_keyword: I HAS A
+	identifiers: temp
+	variable_assignment_keyword: ITZ
+	integer_data_type: 2
+	single-line_comment_delimiter: BTW
+	comment_literal: prints 2 to 9 using TIL
+	loop_keyword: IM IN YR
+	identifiers: print10
+	increment_keyword: UPPIN
+	loop_keyword: YR
+	identifiers: temp
+	loop_keyword: TIL
+	comparison_operator: BOTH SAEM
+	identifiers: temp
+	function_parameter_keyword: AN
+	integer_data_type: 10
+	print_keyword: VISIBLE
+	identifiers: temp
+	loop_exit_keyword: IM OUTTA YR
+	identifiers: print10
+	opening_multi-line_comment_delimiter: OBTW
+	comment_literal:  TO-DO inaantok n kse aq - functions - test case na may errors
+	closing_multi-line_comment_delimiter: TLDR
+	single-line_comment_delimiter: BTW
+	comment_literal: recursive factorial func, di ko alam if dapat isupport to HAHAHAHAAH
+	function_declaration_keyword: HOW IZ I
+	identifiers: factorial
+	loop_keyword: YR
+	identifiers: n
+	function_parameter_keyword: AN
+	loop_keyword: YR
+	identifiers: acc
+	comparison_operator: BOTH SAEM
+	identifiers: n
+	function_parameter_keyword: AN
+	integer_data_type: 0
+	opening_conditional_statement_delimiter: O RLY?
+	alternative_conditional_statement_delimiter: YA RLY
+	function_declaration_keyword: FOUND YR
+	identifiers: acc
+	alternative_conditional_statement_delimiter: NO WAI
+	function_declaration_keyword: FOUND YR
+	function_call_keyword: I IZ
+	identifiers: factorial
+	loop_keyword: YR
+	comparison_operator: DIFFRINT
+	identifiers: n
+	function_parameter_keyword: AN
+	integer_data_type: 1
+	function_parameter_keyword: AN
+	loop_keyword: YR
+	arithmetic_operator: PRODUKT OF
+	identifiers: n
+	function_parameter_keyword: AN
+	identifiers: acc
+	function_declaration_keyword: IF U SAY SO
+	single-line_comment_delimiter: BTW
+	comment_literal: Wrapper function for tail recursion
+	function_declaration_keyword: HOW IZ I
+	identifiers: factorial
+	loop_keyword: YR
+	identifiers: n
+	function_call_keyword: I IZ
+	identifiers: factorial
+	loop_keyword: YR
+	identifiers: n
+	function_parameter_keyword: AN
+	loop_keyword: YR
+	integer_data_type: 1
+	print_keyword: VISIBLE
+	string_delimiter: "
+	string_literal: result: 
+	string_delimiter: "
+	visible_concatenate_operator: +
+	identifiers: IT
+	function_declaration_keyword: IF U SAY SO
+	program_end_delimiter: KTHXBYE
+	single-line_comment_delimiter: BTW
+	comment_literal: some comments after program
