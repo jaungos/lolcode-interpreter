@@ -13,6 +13,7 @@ HAI
     VISIBLE "i am string"
     VISIBLE "a" + "b" + "c"
 
+    VISIBLE SUM OF QUOSHUNT OF PRODUKT OF 3 AN 4 AN 2 AN 1.5
     GIMMEH age
 
     VISIBLE BOTH OF x AN y

@@ -4,7 +4,7 @@
 """
 
 """
-    TODO:
+    TODO:s
         - improve error printing for all errors
             - should always include the type of error, line number, and the token that caused the error
             - for syntax errors, should also include the expected token type and the actual token type
@@ -23,7 +23,12 @@ class SyntaxAnalyzer:
         self.current_token = symbol_table[0]
         self.previous_token = None
 
+        self.current_number_of_nested_arithmetic_operand_operations = 0
+        self.current_number_of_nested_boolean_operand_operations = 0
+        self.current_number_of_nested_comparison_operand_operations = 0
         self.currently_reading_infinite_arity_boolean_operator = False
+        self.currently_inside_variable_declaration_section = False
+        self.isReadingBinaryBooleanOperation = False
 
     def run_syntax_analyzer(self):
         self.analyze()
@@ -138,7 +143,7 @@ class SyntaxAnalyzer:
 
     # <literal-value> ::= numbr_literal | numbar_literal | yarn_literal | troof_literal
     def literal_value(self, node_parent):
-        if self.current_token.token_type == "string_delimiter":
+        if self.current_token.get_token_type() == "string_delimiter":
             yarn_literal_node = ParseTreeNode("<yarn-literal>", node_parent)
             node_parent.add_child(yarn_literal_node)
 
@@ -146,19 +151,19 @@ class SyntaxAnalyzer:
             self.addParseTreeNode(yarn_literal_node)
             self.consume_current_token()
             self.consume_current_token() # Skip the string delimiter
-        elif self.current_token.token_type == "numbr_literal":
+        elif self.current_token.get_token_type() == "numbr_literal":
             numbr_literal_node = ParseTreeNode("<numbr-literal>", node_parent)
             node_parent.add_child(numbr_literal_node)
 
             self.addParseTreeNode(numbr_literal_node)
             self.consume_current_token()
-        elif self.current_token.token_type == "numbar_literal":
+        elif self.current_token.get_token_type() == "numbar_literal":
             numbar_literal_node = ParseTreeNode("<numbar-literal>", node_parent)
             node_parent.add_child(numbar_literal_node)
 
             self.addParseTreeNode(numbar_literal_node)
             self.consume_current_token()
-        elif self.current_token.token_type == "troof_literal":
+        elif self.current_token.get_token_type() == "troof_literal":
             troof_literal_node = ParseTreeNode("<troof-literal>", node_parent)
             node_parent.add_child(troof_literal_node)
 
@@ -183,6 +188,8 @@ class SyntaxAnalyzer:
             self.consume_current_token()
 
             self.var_value(arithmetic_value_operand_node)
+
+            self.current_number_of_nested_arithmetic_operand_operations -= 1
         else:
             # Error handling for invalid arithmetic value operand
             raise Exception(f"Syntax Error: Line {self.current_token.line_number + 1}\n\t Expected another arithmetic value operand but got {self.current_token.token_type}")
@@ -191,50 +198,51 @@ class SyntaxAnalyzer:
     def arithmetic_expression(self, node_parent):
         arith_statement_node = ParseTreeNode("<arithmetic-expression>", node_parent)
         node_parent.add_child(arith_statement_node)
+        self.current_number_of_nested_arithmetic_operand_operations += 1
 
-        if self.current_token.lexeme == "SUM OF":
+        if self.current_token.get_lexeme() == "SUM OF":
             sum_operator_node = ParseTreeNode("<addition-operator>", arith_statement_node)
             arith_statement_node.add_child(sum_operator_node)
             self.addParseTreeNode(sum_operator_node) # Add the SUM OF node as a child of the arithmetic statement node
             self.consume_current_token() # Update the current token to the next token
-
+            
             self.arithmetic_value_operands(sum_operator_node) # Add the arithmetic expression node as a child of the arithmetic statement node
-        elif self.current_token.lexeme == "DIFF OF":
+        elif self.current_token.get_lexeme() == "DIFF OF":
             difference_operator_node = ParseTreeNode("<subtraction-operator>", arith_statement_node)
             arith_statement_node.add_child(difference_operator_node)
             self.addParseTreeNode(difference_operator_node)
             self.consume_current_token()
 
             self.arithmetic_value_operands(difference_operator_node)
-        elif self.current_token.lexeme == "PRODUKT OF":
+        elif self.current_token.get_lexeme() == "PRODUKT OF":
             product_operator_node = ParseTreeNode("<multiplication-operator>", arith_statement_node)
             arith_statement_node.add_child(product_operator_node)
             self.addParseTreeNode(product_operator_node)
             self.consume_current_token()
 
             self.arithmetic_value_operands(product_operator_node)
-        elif self.current_token.lexeme == "QUOSHUNT OF":
+        elif self.current_token.get_lexeme() == "QUOSHUNT OF":
             quotient_operator_node = ParseTreeNode("<division-operator>", arith_statement_node)
             arith_statement_node.add_child(quotient_operator_node)
             self.addParseTreeNode(quotient_operator_node)
             self.consume_current_token()
 
             self.arithmetic_value_operands(quotient_operator_node)
-        elif self.current_token.lexeme == "MOD OF":
+        elif self.current_token.get_lexeme() == "MOD OF":
             modulo_operator_node = ParseTreeNode("<modulo-operator>", arith_statement_node)
             arith_statement_node.add_child(modulo_operator_node)
             self.addParseTreeNode(modulo_operator_node)
             self.consume_current_token()
 
             self.arithmetic_value_operands(modulo_operator_node)
-        elif self.current_token.lexeme == "BIGGR OF":
+        elif self.current_token.get_lexeme() == "BIGGR OF":
             max_operator_node = ParseTreeNode("<max-operator>", arith_statement_node)
             arith_statement_node.add_child(max_operator_node)
             self.addParseTreeNode(max_operator_node)
             self.consume_current_token()
 
             self.arithmetic_value_operands(max_operator_node)
-        elif self.current_token.lexeme == "SMALLR OF":
+        elif self.current_token.get_lexeme() == "SMALLR OF":
             min_operator_node = ParseTreeNode("<min-operator>", arith_statement_node)
             arith_statement_node.add_child(min_operator_node)
             self.addParseTreeNode(min_operator_node)
@@ -244,77 +252,98 @@ class SyntaxAnalyzer:
         else:
             raise Exception(f"Syntax Error: Line {self.current_token.line_number + 1}\n\t Expected arithmetic operator but got {self.current_token.token_type}")
 
-    # <boolean-value-operands> ::= <var-value> AN <var-value>
+        if self.current_number_of_nested_arithmetic_operand_operations == 0 and self.check_if_token_matches_expected_token_types("operand_separator_keyword"):
+            raise Exception(f"Syntax Error: Line {self.current_token.line_number + 1}\n\t Arithmetic operations are only binary")
+
+    # <boolean-value-operands> ::= <var-value> AN <var-value> | NOT <var-value> AN <var-value> | <var-value> AN NOT <var-value> | NOT <var-value> AN <var-value> | NOT <var-value>
     def boolean_value_operands(self, node_parent):
         boolean_value_operand_node = ParseTreeNode("<boolean-value-operands>", node_parent)
         node_parent.add_child(boolean_value_operand_node)
 
-        self.var_value(boolean_value_operand_node)
+        if self.current_token.get_lexeme() == "NOT":
+            not_operator_node = ParseTreeNode("<not-operator>", boolean_value_operand_node)
+            boolean_value_operand_node.add_child(not_operator_node)
+            self.addParseTreeNode(not_operator_node)
+            self.consume_current_token()
 
-        # Check for the AN keyword
+            if self.isReadingBinaryBooleanOperation == False and self.currently_reading_infinite_arity_boolean_operator == True:
+                self.var_value(not_operator_node)
+                return
+            
+            self.var_value(not_operator_node)
+        else:
+            if self.isReadingBinaryBooleanOperation == False and self.currently_reading_infinite_arity_boolean_operator == True:
+                self.var_value(boolean_value_operand_node)
+                return
+            
+            self.var_value(boolean_value_operand_node)
+
         if self.check_if_token_matches_expected_token_types("operand_separator_keyword"):
             operand_separator_node = ParseTreeNode("<operand-separator-operator>", boolean_value_operand_node)
             boolean_value_operand_node.add_child(operand_separator_node)
             self.addParseTreeNode(operand_separator_node)
             self.consume_current_token()
 
-            self.var_value(boolean_value_operand_node)
-
-            while self.currently_reading_infinite_arity_boolean_operator == True and self.check_if_token_matches_expected_token_types("operand_separator_keyword"):
-                operand_separator_node = ParseTreeNode("<operand-separator-operator>", boolean_value_operand_node)
-                boolean_value_operand_node.add_child(operand_separator_node)
-                self.addParseTreeNode(operand_separator_node)
+            if self.current_token.get_lexeme() == "NOT":
+                not_operator_node = ParseTreeNode("<not-operator>", boolean_value_operand_node)
+                boolean_value_operand_node.add_child(not_operator_node)
+                self.addParseTreeNode(not_operator_node)
                 self.consume_current_token()
 
+                self.var_value(not_operator_node)
+            else:
                 self.var_value(boolean_value_operand_node)
-        else:
+
+            self.current_number_of_nested_boolean_operand_operations -= 1
+            self.isReadingBinaryBooleanOperation = False
+        elif self.current_number_of_nested_boolean_operand_operations > 0 and not self.check_if_token_matches_expected_token_types("operand_separator_keyword") and self.currently_reading_infinite_arity_boolean_operator == False:
             # Error handling for invalid logical value operand
             raise Exception(f"Syntax Error: Line {self.current_token.line_number + 1}\n\t Expected another boolean value operand but got {self.current_token.token_type}")
 
-    # <boolean-operations> ::= BOTH OF <boolean-value-operands> | EITHER OF <boolean-value-operands> | WON OF <boolean-value-operands> | NOT <var-value> 
+    # <boolean-operations> ::= BOTH OF <boolean-value-operands> | EITHER OF <boolean-value-operands> | WON OF <boolean-value-operands> | <boolean-value-operands>
     def boolean_operations(self, node_parent):
         boolean_operation_node = ParseTreeNode("<boolean-operations>", node_parent)
         node_parent.add_child(boolean_operation_node)
 
-        if self.current_token.lexeme == "BOTH OF":
+        if self.current_token.get_lexeme() in ["BOTH OF", "EITHER OF", "WON OF"]:
+            self.current_number_of_nested_boolean_operand_operations += 1
+            self.isReadingBinaryBooleanOperation = True
+
+        if self.current_token.get_lexeme() == "BOTH OF":
             and_operator_node = ParseTreeNode("<and-operator>", boolean_operation_node)
             boolean_operation_node.add_child(and_operator_node)
             self.addParseTreeNode(and_operator_node)
             self.consume_current_token()
 
             self.boolean_value_operands(and_operator_node)
-        elif self.current_token.lexeme == "EITHER OF":
+        elif self.current_token.get_lexeme() == "EITHER OF":
             or_operator_node = ParseTreeNode("<or-operator>", boolean_operation_node)
             boolean_operation_node.add_child(or_operator_node)
             self.addParseTreeNode(or_operator_node)
             self.consume_current_token()
 
             self.boolean_value_operands(or_operator_node)
-        elif self.current_token.lexeme == "WON OF":
+        elif self.current_token.get_lexeme() == "WON OF":
             xor_operator_node = ParseTreeNode("<xor-operator>", boolean_operation_node)
             boolean_operation_node.add_child(xor_operator_node)
             self.addParseTreeNode(xor_operator_node)
             self.consume_current_token()
 
             self.boolean_value_operands(xor_operator_node)
-        elif self.current_token.lexeme == "NOT":
-            not_operator_node = ParseTreeNode("<not-operator>", boolean_operation_node)
-            boolean_operation_node.add_child(not_operator_node)
-            self.addParseTreeNode(not_operator_node)
-            self.consume_current_token()
-
-            self.var_value(not_operator_node)
         else:
             self.boolean_value_operands(boolean_operation_node)
+
+        if self.current_number_of_nested_boolean_operand_operations == 0 and self.check_if_token_matches_expected_token_types("operand_separator_keyword") and self.currently_reading_infinite_arity_boolean_operator == False:
+            raise Exception(f"Syntax Error: Line {self.current_token.line_number + 1}\n\t Boolean operations are only binary")
 
     # <boolean-expression> ::= ALL OF <boolean-operations> MKAY | ANY OF <boolean-operations> MKAY
     def boolean_expression(self, node_parent):
         boolean_statement_node = ParseTreeNode("<boolean-expression>", node_parent)
         node_parent.add_child(boolean_statement_node)
 
-        if self.current_token.lexeme == "ALL OF":
+        if self.current_token.get_lexeme() == "ALL OF":
             if self.currently_reading_infinite_arity_boolean_operator == True:
-                raise Exception(f"Syntax Error: Line {self.current_token.line_number + 1}\n\t Expected a non-infinite arity boolean operator but got {self.current_token.token_type}")
+                raise Exception(f"Syntax Error: Line {self.current_token.line_number + 1}\n\t Infinite arity boolean operators cannot be nested with each other and themselves")
 
             infinite_and_operator_node = ParseTreeNode("<infinite-arity-and-operator>", boolean_statement_node)
             boolean_statement_node.add_child(infinite_and_operator_node)
@@ -324,15 +353,24 @@ class SyntaxAnalyzer:
 
             self.boolean_operations(infinite_and_operator_node)
 
-            if self.currently_reading_infinite_arity_boolean_operator == True and self.check_if_token_matches_expected_token_types("multi_operator_closing_delimiter"):
-                infinite_and_operator_end_delimiter_node = ParseTreeNode("<multiple-operator-closing-delimiter>", infinite_and_operator_node)
-                infinite_and_operator_node.add_child(infinite_and_operator_end_delimiter_node)
-                self.addParseTreeNode(infinite_and_operator_end_delimiter_node)
-                self.consume_current_token()
-                self.currently_reading_infinite_arity_boolean_operator = False
-        elif self.current_token.lexeme == "ANY OF":
             if self.currently_reading_infinite_arity_boolean_operator == True:
-                raise Exception(f"Syntax Error: Line {self.current_token.line_number + 1}\n\t Expected a non-infinite arity boolean operator but got {self.current_token.token_type}")
+                while self.check_if_token_matches_expected_token_types("operand_separator_keyword"):
+                    operator_separator_node = ParseTreeNode("<operator-separator-operator>", infinite_and_operator_node)
+                    infinite_and_operator_node.add_child(operator_separator_node)
+                    self.addParseTreeNode(operator_separator_node)
+                    self.consume_current_token()
+
+                    self.boolean_operations(infinite_and_operator_node)
+
+                if self.check_if_token_matches_expected_token_types("multi_operator_closing_delimiter"):
+                    infinite_and_operator_end_delimiter_node = ParseTreeNode("<multiple-operator-closing-delimiter>", infinite_and_operator_node)
+                    infinite_and_operator_node.add_child(infinite_and_operator_end_delimiter_node)
+                    self.addParseTreeNode(infinite_and_operator_end_delimiter_node)
+                    self.consume_current_token()
+                    self.currently_reading_infinite_arity_boolean_operator = False
+        elif self.current_token.get_lexeme() == "ANY OF":
+            if self.currently_reading_infinite_arity_boolean_operator == True:
+                raise Exception(f"Syntax Error: Line {self.current_token.line_number + 1}\n\t Infinite arity boolean operators cannot be nested with each other and themselves")
 
             infinite_or_operator_node = ParseTreeNode("<infinite-arity-or-operator>", boolean_statement_node)
             boolean_statement_node.add_child(infinite_or_operator_node)
@@ -342,18 +380,26 @@ class SyntaxAnalyzer:
 
             self.boolean_operations(infinite_or_operator_node)
 
-            if self.currently_reading_infinite_arity_boolean_operator == True and self.check_if_token_matches_expected_token_types("multi_operator_closing_delimiter"):
-                infinite_or_operator_end_delimiter_node = ParseTreeNode("<multiple-operator-closing-delimiter>", infinite_or_operator_node)
-                infinite_or_operator_node.add_child(infinite_or_operator_end_delimiter_node)
-                self.addParseTreeNode(infinite_or_operator_end_delimiter_node)
-                self.consume_current_token()
-                self.currently_reading_infinite_arity_boolean_operator = False
+            if self.currently_reading_infinite_arity_boolean_operator == True:
+                while self.check_if_token_matches_expected_token_types("operand_separator_keyword"):
+                    operator_separator_node = ParseTreeNode("<operator-separator-operator>", infinite_or_operator_node)
+                    infinite_or_operator_node.add_child(operator_separator_node)
+                    self.addParseTreeNode(operator_separator_node)
+                    self.consume_current_token()
+
+                    self.boolean_operations(infinite_or_operator_node)
+                
+                if self.check_if_token_matches_expected_token_types("multi_operator_closing_delimiter"):
+                    infinite_or_operator_end_delimiter_node = ParseTreeNode("<multiple-operator-closing-delimiter>", infinite_or_operator_node)
+                    infinite_or_operator_node.add_child(infinite_or_operator_end_delimiter_node)
+                    self.addParseTreeNode(infinite_or_operator_end_delimiter_node)
+                    self.consume_current_token()
+                    self.currently_reading_infinite_arity_boolean_operator = False
         else:
             self.boolean_operations(boolean_statement_node)
 
     # <comparison-value-operands> ::= <var-value> AN <var-value> | <var-value> AN BIGGR OF <var-value> | <var-value> AN SMALLR OF <var-value>
     def comparison_value_operands(self, node_parent):
-        print(f'Current token: {self.current_token.lexeme} at line {self.current_token.line_number}')
         comparison_value_operand_node = ParseTreeNode("<comparison-value-operands>", node_parent)
         node_parent.add_child(comparison_value_operand_node)
 
@@ -367,15 +413,17 @@ class SyntaxAnalyzer:
             self.consume_current_token()
 
             self.var_value(comparison_value_operand_node)
+
+            self.current_number_of_nested_comparison_operand_operations -= 1
         else:
             # Error handling for invalid comparison value operand
             raise Exception(f"Syntax Error: Line {self.current_token.line_number + 1}\n\t Expected another comparison value operand but got {self.current_token.token_type}")
 
     # <comparison-expression> ::= BOTH SAEM <comparison-value-operands> | DIFFRINT <comparison-value-operands>
     def comparison_expression(self, node_parent):
-        print(f'Current token: {self.current_token.lexeme} at line {self.current_token.line_number}')
         comparison_statement_node = ParseTreeNode("<comparison-expression>", node_parent)
         node_parent.add_child(comparison_statement_node)
+        self.current_number_of_nested_comparison_operand_operations += 1
 
         if self.current_token.lexeme == "BOTH SAEM":
             equal_operator_node = ParseTreeNode("<equal-operator>", comparison_statement_node)
@@ -394,6 +442,9 @@ class SyntaxAnalyzer:
         else:
             # Error handling for invalid comparison operator
             raise Exception(f"Syntax Error: Line {self.current_token.line_number + 1}\n\t Expected comparison operator but got {self.current_token.token_type}")
+        
+        if self.current_number_of_nested_comparison_operand_operations == 0 and self.check_if_token_matches_expected_token_types("operand_separator_keyword"):
+            raise Exception(f"Syntax Error: Line {self.current_token.line_number + 1}\n\t Comparison operations are only binary")
 
     # <concat-loop> ::= <var-value> | <var-value> AN <concat-loop>
     def concat_loop(self, node_parent):
@@ -436,7 +487,6 @@ class SyntaxAnalyzer:
             self.comparison_expression(node_parent)
         elif self.current_token.token_type == "concatenation_operator":
             self.concatenation_expression(node_parent)
-        # TODO: double check if pwede rin typecasting
         else:
             # Error handling for invalid expression
             raise Exception(f"Syntax Error: Line {self.current_token.line_number + 1}\n\t Expected expression but got {self.current_token.token_type}")
@@ -450,7 +500,7 @@ class SyntaxAnalyzer:
         if self.current_token.token_type in ["numbr_literal", "numbar_literal", "string_delimiter", "troof_literal"]:
             literal_value_node = ParseTreeNode("<literal-value>", var_value_node)
             var_value_node.add_child(literal_value_node)
-            
+
             self.literal_value(literal_value_node) # Add the literal value node as a child of the var value node
         # If the value is a variable identifier
         elif self.current_token.token_type == "identifiers":
@@ -460,8 +510,7 @@ class SyntaxAnalyzer:
             self.addParseTreeNode(variable_value_node)
             self.consume_current_token()
         # If the value is an expression
-        # TODO: ask if typecasting is also an expression
-        elif self.current_token.token_type in ["arithmetic_operator", "logical_operator", "comparison_operator", "concatenation_operator", ]:
+        elif self.current_token.token_type in ["arithmetic_operator", "logical_operator", "comparison_operator", "concatenation_operator"]:
             expression_value_node = ParseTreeNode("<expression-value>", var_value_node)
             var_value_node.add_child(expression_value_node)
 
@@ -470,18 +519,18 @@ class SyntaxAnalyzer:
             # Error handling for invalid var value
             raise Exception(f"Syntax Error: Line {self.current_token.line_number + 1}\n\t Expected literal, variable identifier, or expression but got {self.current_token.token_type}")
 
-    # <varident> ::= identifier | ITZ <var-value>
+    # <varident> ::= identifier | identifier ITZ <var-value>
     def varident(self, node_parent):
-        varident_node = ParseTreeNode("<varident>", node_parent)
-        node_parent.add_child(varident_node)
-
         if self.check_if_token_matches_expected_token_types("identifiers"):
-            # TODO: add additional check if the identifier is a keyword or reserved keyword (make an array of keywords para IN <array-name> na check na lang)
-            # if self.current_token IN keywords:
-            self.addParseTreeNode(varident_node)
+            identifer_node = ParseTreeNode("<identifier>", node_parent)
+            node_parent.add_child(identifer_node)
+            self.addParseTreeNode(identifer_node)
             self.consume_current_token()
 
             if self.check_if_token_matches_expected_token_types("variable_initialization_keyword"):
+                if self.currently_inside_variable_declaration_section == False:
+                    raise Exception(f"Syntax Error: Line {self.current_token.line_number + 1}\n\t Variable initialization keyword cannot be used outside variable declaration section of the program")
+
                 var_node_initialization = ParseTreeNode("<var-initialization>", node_parent)
                 node_parent.add_child(var_node_initialization)
                 self.addParseTreeNode(var_node_initialization) # Add the ITZ node as a child of the var node initialization
@@ -490,7 +539,7 @@ class SyntaxAnalyzer:
                 self.var_value(var_node_initialization) # Add the var value node as a child of the var node initialization
         else:
             # Error handling for invalid variable identifier
-            raise Exception(f"Syntax Error: Line {self.current_token.line_number + 1}\n\t Expected variable identifier but got {self.current_token.token_type}")
+            raise Exception(f"Syntax Error: Line {self.current_token.line_number + 1}\n\t Expected identifier but got {self.current_token.token_type}")
 
     # <var> ::= I HAS A <varident> | I HAS A <varident> ITZ <var-value>
     def var(self, node_parent):
@@ -509,8 +558,8 @@ class SyntaxAnalyzer:
             self.var(node_parent)
 
     # <variable-declaration> ::= WAZZUP <var> BUHBYE
-    # TODO: implement I HAS A and ITZ keywords outside of variable declaration
     def variable_declaration(self):
+        self.currently_inside_variable_declaration_section = True
         variable_declaration_node = ParseTreeNode("<variable-declaration>", self.parse_tree)
         self.parse_tree.add_child(variable_declaration_node)
 
@@ -527,12 +576,13 @@ class SyntaxAnalyzer:
             variable_declaration_node.add_child(variable_declaration_end_delimiter_node)
             self.addParseTreeNode(variable_declaration_end_delimiter_node) # Add the BUHBYE node as a child of the variable declaration node
             self.consume_current_token() # Update the current token to the next token
+
+            self.currently_inside_variable_declaration_section = False
         else:
             # Error handling for missing BUHBYE keyword
             raise Exception(f"Syntax Error: Line {self.current_token.line_number + 1}\n\t Expected variable declaration end delimiter but got {self.current_token.token_type}")
     
     # <print-loop> ::= <var-value> | <var-value> + <print-loop>
-    # TODO: remove only for testing smoosh
     def print_loop(self, node_parent):
         print_loop_node = ParseTreeNode("<print-loop>", node_parent)
         node_parent.add_child(print_loop_node)
@@ -552,7 +602,9 @@ class SyntaxAnalyzer:
         print_statement_node = ParseTreeNode("<print>", node_parent)
         node_parent.add_child(print_statement_node)
 
-        self.addParseTreeNode(print_statement_node) # Add the VISIBLE node as a child of the print statement node
+        visible_operator = ParseTreeNode("<visible-operator>", print_statement_node)
+        print_statement_node.add_child(visible_operator)
+        self.addParseTreeNode(visible_operator) # Add the VISIBLE node as a child of the print statement node
         self.consume_current_token() # Update the current token to the next token
 
         self.print_loop(print_statement_node) # Add the var value node as a child of the print statement node
@@ -563,7 +615,7 @@ class SyntaxAnalyzer:
             self.addParseTreeNode(suppress_newline_delimiter_node)
             self.consume_current_token() # Update the current token to the next token
 
-    # <assignment> ::= <varident> R <var-value>
+    # <assignment> ::= <varident> R <var-value> | <varident> R <casting> | <varident> IS NOW A <valid-type>
     def assignment_statement(self, node_parent):
         assignment_statement_node = ParseTreeNode("<assignment>", node_parent)
         node_parent.add_child(assignment_statement_node)
@@ -571,44 +623,60 @@ class SyntaxAnalyzer:
         self.varident(assignment_statement_node)
 
         if self.check_if_token_matches_expected_token_types("variable_assignment_keyword"):
-            self.addParseTreeNode(assignment_statement_node)
+            variable_assignment_node = ParseTreeNode("<variable-assignment-operator>", assignment_statement_node)
+            assignment_statement_node.add_child(variable_assignment_node)
+            self.addParseTreeNode(variable_assignment_node)
             self.consume_current_token()
 
-            self.var_value(assignment_statement_node)
+            # Check if it is a type casting assignment or a value assignment
+            if self.check_if_token_matches_expected_token_types("type_casting_delimiter"):
+                self.casting_statement(assignment_statement_node)
+            else:
+                self.var_value(assignment_statement_node)
+        elif self.check_if_token_matches_expected_token_types("type_casting_assignment_operator"):
+            type_casting_assignment_node = ParseTreeNode("<type-casting-assignment-operator>", assignment_statement_node)
+            assignment_statement_node.add_child(type_casting_assignment_node)
+            self.addParseTreeNode(type_casting_assignment_node)
+            self.consume_current_token()
+
+            self.valid_type(type_casting_assignment_node)
         else:
             # Error handling for missing assignment operator
-            raise Exception(f"Syntax Error: Line {self.current_token.line_number + 1}\n\t Expected assignment operator but got {self.current_token.token_type}")
+            raise Exception(f"Syntax Error: Line {self.current_token.line_number + 1}\n\t Expected assignment operator or type casting assignment operator but got {self.current_token.token_type}")
 
-    # <input> ::= GIMMEH <var>
+    # <input> ::= GIMMEH <varident>
     def input_statement(self, node_parent):
         input_statement_node = ParseTreeNode("<input>", node_parent)
         node_parent.add_child(input_statement_node)
 
-        self.addParseTreeNode(input_statement_node) # Add the GIMMEH node as a child of the input statement node
+        input_operator = ParseTreeNode("<input-operator>", input_statement_node)
+        input_statement_node.add_child(input_operator)
+        self.addParseTreeNode(input_operator) # Add the GIMMEH node as a child of the input statement node
         self.consume_current_token() # Update the current token to the next token
 
         self.varident(input_statement_node)
 
-    # <casting> ::= MAEK <valid-casting> A <valid-type> | varident IS NOW A <valid-type>
+    # <casting> ::= MAEK <var-value> A <valid-type> | MAEK <var-value> <valid-type> 
     def casting_statement(self, node_parent):
         casting_node = ParseTreeNode("<casting>", node_parent)
         node_parent.add_child(casting_node)
 
-        # TODO: implement IS NOW A
-
-        self.addParseTreeNode(casting_node) # Add the MAEK node as a child of the casting node
+        type_casting_operator = ParseTreeNode("<type-casting-operator>", casting_node)
+        casting_node.add_child(type_casting_operator)
+        self.addParseTreeNode(type_casting_operator) # Add the MAEK node as a child of the casting node
         self.consume_current_token() # Update the current token to the next token
 
-        self.varident(casting_node) # Add the varident node as a child of the casting node
+        self.var_value(casting_node) # Add the varident node as a child of the casting node
 
         if self.check_if_token_matches_expected_token_types("type_casting_reassignment_operator"):
-            self.addParseTreeNode(casting_node)
+            type_casting_reassignment_node = ParseTreeNode("<type-casting-reassignment-operator>", casting_node)
+            casting_node.add_child(type_casting_reassignment_node)
+            self.addParseTreeNode(type_casting_reassignment_node)
             self.consume_current_token()
 
             self.valid_type(casting_node)
         else:
-            # Error handling for missing assignment operator
-            raise Exception(f"Syntax Error: Line {self.current_token.line_number + 1}\n\t Expected typecast reassignment operator but got {self.current_token.token_type}")
+            self.valid_type(casting_node)
 
     # <code-block> ::= <print> | <expression> | <operator> | <if-then> | <loop-opt> | <assignment> | <input> | <function-call> | <switch> | <casting> | <concat> | <code-block>
     def codeblock(self, node_parent):
@@ -616,7 +684,7 @@ class SyntaxAnalyzer:
         if self.check_if_token_matches_expected_token_types("print_keyword"):
             self.print_statement(node_parent)
 
-        # Check if the current token is the assignment keyword
+        # Check if the current token is an identifier for the assignment keyword/typecasting assignment keyword
         if self.check_if_token_matches_expected_token_types("identifiers"):
             self.assignment_statement(node_parent)
 
@@ -625,15 +693,23 @@ class SyntaxAnalyzer:
             self.input_statement(node_parent)
 
         # Check if the current token is the type casting keyword
-        if self.check_if_token_matches_expected_token_types("type_casting_maek_delimiter"):
+        if self.check_if_token_matches_expected_token_types("type_casting_delimiter"):
             self.casting_statement(node_parent)
 
         # Check if the current token is one of the keywords under expressions
         if self.current_token.token_type in ["arithmetic_operator", "logical_operator", "comparison_operator", "concatenation_operator"]:
             self.expression(node_parent)
 
+        # TODO: dito kayo magadd ng other keywords na pwede sa codeblock
+
         # Check if the current token is still not the program end delimiter
         if not self.check_if_token_matches_expected_token_types("program_end_delimiter"):
+            # TODO: add the other keywords
+            if self.current_token.token_type not in ["print_keyword", "identifiers", "input_keyword", "type_casting_delimiter", "arithmetic_operator", "logical_operator", "comparison_operator", "concatenation_operator"]:
+                # Error handling for invalid code block
+                # TODO: improve error handling for invalid code block ---- change error message
+                raise Exception(f"Syntax Error: Line {self.current_token.line_number + 1}\n\t Expected code block but got {self.current_token.token_type}")
+
             self.codeblock(node_parent)
 
     # <program> ::= <function> HAI <variable-declaration> <code-block> KTHXBYE <function>
