@@ -252,7 +252,7 @@ class SyntaxAnalyzer:
         else:
             raise Exception(f"Syntax Error: Line {self.current_token.line_number + 1}\n\t Expected arithmetic operator but got {self.current_token.token_type}")
 
-        if self.current_number_of_nested_arithmetic_operand_operations == 0 and self.check_if_token_matches_expected_token_types("operand_separator_keyword"):
+        if self.current_number_of_nested_arithmetic_operand_operations == 0 and self.current_number_of_nested_boolean_operand_operations == 0 and self.current_number_of_nested_comparison_operand_operations == 0 and self.check_if_token_matches_expected_token_types("operand_separator_keyword"):
             raise Exception(f"Syntax Error: Line {self.current_token.line_number + 1}\n\t Arithmetic operations are only binary")
 
     # <boolean-value-operands> ::= <var-value> AN <var-value> | NOT <var-value> AN <var-value> | <var-value> AN NOT <var-value> | NOT <var-value> AN <var-value> | NOT <var-value>
@@ -333,7 +333,7 @@ class SyntaxAnalyzer:
         else:
             self.boolean_value_operands(boolean_operation_node)
 
-        if self.current_number_of_nested_boolean_operand_operations == 0 and self.check_if_token_matches_expected_token_types("operand_separator_keyword") and self.currently_reading_infinite_arity_boolean_operator == False:
+        if self.current_number_of_nested_arithmetic_operand_operations == 0 and self.current_number_of_nested_boolean_operand_operations == 0 and self.current_number_of_nested_comparison_operand_operations == 0 and self.check_if_token_matches_expected_token_types("operand_separator_keyword") and self.currently_reading_infinite_arity_boolean_operator == False:
             raise Exception(f"Syntax Error: Line {self.current_token.line_number + 1}\n\t Boolean operations are only binary")
 
     # <boolean-expression> ::= ALL OF <boolean-operations> MKAY | ANY OF <boolean-operations> MKAY
@@ -443,7 +443,7 @@ class SyntaxAnalyzer:
             # Error handling for invalid comparison operator
             raise Exception(f"Syntax Error: Line {self.current_token.line_number + 1}\n\t Expected comparison operator but got {self.current_token.token_type}")
         
-        if self.current_number_of_nested_comparison_operand_operations == 0 and self.check_if_token_matches_expected_token_types("operand_separator_keyword"):
+        if self.current_number_of_nested_arithmetic_operand_operations == 0 and self.current_number_of_nested_boolean_operand_operations == 0 and self.current_number_of_nested_comparison_operand_operations == 0 and self.check_if_token_matches_expected_token_types("operand_separator_keyword"):
             raise Exception(f"Syntax Error: Line {self.current_token.line_number + 1}\n\t Comparison operations are only binary")
 
     # <concat-loop> ::= <var-value> | <var-value> AN <concat-loop>
