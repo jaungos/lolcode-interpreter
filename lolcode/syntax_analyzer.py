@@ -244,28 +244,156 @@ class SyntaxAnalyzer:
         else:
             raise Exception(f"Syntax Error: Line {self.current_token.line_number + 1}\n\t Expected arithmetic operator but got {self.current_token.token_type}")
 
-    # <boolean-operations> ::= BOTH OF <logical-value-operands> | EITHER OF <logical-value-operands> | WON OF <logical-value-operands> | NOT <logical-value-operands> 
+    # <boolean-value-operands> ::= <var-value> AN <var-value>
+    def boolean_value_operands(self, node_parent):
+        boolean_value_operand_node = ParseTreeNode("<boolean-value-operands>", node_parent)
+        node_parent.add_child(boolean_value_operand_node)
 
-    # <logical-expression> ::= ALL OF <logical-expression> MKAY | ANY OF <logical-expression> MKAY
-    def logical_expression(self, node_parent):
-        logical_statement_node = ParseTreeNode("<logical-expression>", node_parent)
-        node_parent.add_child(logical_statement_node)
+        self.var_value(boolean_value_operand_node)
+
+        # Check for the AN keyword
+        if self.check_if_token_matches_expected_token_types("operand_separator_keyword"):
+            operand_separator_node = ParseTreeNode("<operand-separator-operator>", boolean_value_operand_node)
+            boolean_value_operand_node.add_child(operand_separator_node)
+            self.addParseTreeNode(operand_separator_node)
+            self.consume_current_token()
+
+            self.var_value(boolean_value_operand_node)
+
+            while self.currently_reading_infinite_arity_boolean_operator == True and self.check_if_token_matches_expected_token_types("operand_separator_keyword"):
+                operand_separator_node = ParseTreeNode("<operand-separator-operator>", boolean_value_operand_node)
+                boolean_value_operand_node.add_child(operand_separator_node)
+                self.addParseTreeNode(operand_separator_node)
+                self.consume_current_token()
+
+                self.var_value(boolean_value_operand_node)
+        else:
+            # Error handling for invalid logical value operand
+            raise Exception(f"Syntax Error: Line {self.current_token.line_number + 1}\n\t Expected another boolean value operand but got {self.current_token.token_type}")
+
+    # <boolean-operations> ::= BOTH OF <boolean-value-operands> | EITHER OF <boolean-value-operands> | WON OF <boolean-value-operands> | NOT <var-value> 
+    def boolean_operations(self, node_parent):
+        boolean_operation_node = ParseTreeNode("<boolean-operations>", node_parent)
+        node_parent.add_child(boolean_operation_node)
+
+        if self.current_token.lexeme == "BOTH OF":
+            and_operator_node = ParseTreeNode("<and-operator>", boolean_operation_node)
+            boolean_operation_node.add_child(and_operator_node)
+            self.addParseTreeNode(and_operator_node)
+            self.consume_current_token()
+
+            self.boolean_value_operands(and_operator_node)
+        elif self.current_token.lexeme == "EITHER OF":
+            or_operator_node = ParseTreeNode("<or-operator>", boolean_operation_node)
+            boolean_operation_node.add_child(or_operator_node)
+            self.addParseTreeNode(or_operator_node)
+            self.consume_current_token()
+
+            self.boolean_value_operands(or_operator_node)
+        elif self.current_token.lexeme == "WON OF":
+            xor_operator_node = ParseTreeNode("<xor-operator>", boolean_operation_node)
+            boolean_operation_node.add_child(xor_operator_node)
+            self.addParseTreeNode(xor_operator_node)
+            self.consume_current_token()
+
+            self.boolean_value_operands(xor_operator_node)
+        elif self.current_token.lexeme == "NOT":
+            not_operator_node = ParseTreeNode("<not-operator>", boolean_operation_node)
+            boolean_operation_node.add_child(not_operator_node)
+            self.addParseTreeNode(not_operator_node)
+            self.consume_current_token()
+
+            self.var_value(not_operator_node)
+        else:
+            self.boolean_value_operands(boolean_operation_node)
+
+    # <boolean-expression> ::= ALL OF <boolean-operations> MKAY | ANY OF <boolean-operations> MKAY
+    def boolean_expression(self, node_parent):
+        boolean_statement_node = ParseTreeNode("<boolean-expression>", node_parent)
+        node_parent.add_child(boolean_statement_node)
 
         if self.current_token.lexeme == "ALL OF":
             if self.currently_reading_infinite_arity_boolean_operator == True:
                 raise Exception(f"Syntax Error: Line {self.current_token.line_number + 1}\n\t Expected a non-infinite arity boolean operator but got {self.current_token.token_type}")
 
-            infinite_and_operator_node = ParseTreeNode("<infinite-arity-and-operator>", logical_statement_node)
-            logical_statement_node.add_child(infinite_and_operator_node)
+            infinite_and_operator_node = ParseTreeNode("<infinite-arity-and-operator>", boolean_statement_node)
+            boolean_statement_node.add_child(infinite_and_operator_node)
             self.addParseTreeNode(infinite_and_operator_node)
             self.consume_current_token()
             self.currently_reading_infinite_arity_boolean_operator = True
 
-        
-        
+            self.boolean_operations(infinite_and_operator_node)
+
+            if self.currently_reading_infinite_arity_boolean_operator == True and self.check_if_token_matches_expected_token_types("multi_operator_closing_delimiter"):
+                infinite_and_operator_end_delimiter_node = ParseTreeNode("<multiple-operator-closing-delimiter>", infinite_and_operator_node)
+                infinite_and_operator_node.add_child(infinite_and_operator_end_delimiter_node)
+                self.addParseTreeNode(infinite_and_operator_end_delimiter_node)
+                self.consume_current_token()
+                self.currently_reading_infinite_arity_boolean_operator = False
+        elif self.current_token.lexeme == "ANY OF":
+            if self.currently_reading_infinite_arity_boolean_operator == True:
+                raise Exception(f"Syntax Error: Line {self.current_token.line_number + 1}\n\t Expected a non-infinite arity boolean operator but got {self.current_token.token_type}")
+
+            infinite_or_operator_node = ParseTreeNode("<infinite-arity-or-operator>", boolean_statement_node)
+            boolean_statement_node.add_child(infinite_or_operator_node)
+            self.addParseTreeNode(infinite_or_operator_node)
+            self.consume_current_token()
+            self.currently_reading_infinite_arity_boolean_operator = True
+
+            self.boolean_operations(infinite_or_operator_node)
+
+            if self.currently_reading_infinite_arity_boolean_operator == True and self.check_if_token_matches_expected_token_types("multi_operator_closing_delimiter"):
+                infinite_or_operator_end_delimiter_node = ParseTreeNode("<multiple-operator-closing-delimiter>", infinite_or_operator_node)
+                infinite_or_operator_node.add_child(infinite_or_operator_end_delimiter_node)
+                self.addParseTreeNode(infinite_or_operator_end_delimiter_node)
+                self.consume_current_token()
+                self.currently_reading_infinite_arity_boolean_operator = False
         else:
-            # Error handling for invalid logical expression
-            raise Exception(f"Syntax Error: Line {self.current_token.line_number + 1}\n\t Expected boolean operator but got {self.current_token.token_type}")
+            self.boolean_operations(boolean_statement_node)
+
+    # <comparison-value-operands> ::= <var-value> AN <var-value> | <var-value> AN BIGGR OF <var-value> | <var-value> AN SMALLR OF <var-value>
+    def comparison_value_operands(self, node_parent):
+        print(f'Current token: {self.current_token.lexeme} at line {self.current_token.line_number}')
+        comparison_value_operand_node = ParseTreeNode("<comparison-value-operands>", node_parent)
+        node_parent.add_child(comparison_value_operand_node)
+
+        self.var_value(comparison_value_operand_node)
+
+        # Check for the AN keyword
+        if self.check_if_token_matches_expected_token_types("operand_separator_keyword"):
+            operand_separator_node = ParseTreeNode("<operand-separator-operator>", comparison_value_operand_node)
+            comparison_value_operand_node.add_child(operand_separator_node)
+            self.addParseTreeNode(operand_separator_node)
+            self.consume_current_token()
+
+            self.var_value(comparison_value_operand_node)
+        else:
+            # Error handling for invalid comparison value operand
+            raise Exception(f"Syntax Error: Line {self.current_token.line_number + 1}\n\t Expected another comparison value operand but got {self.current_token.token_type}")
+
+    # <comparison-expression> ::= BOTH SAEM <comparison-value-operands> | DIFFRINT <comparison-value-operands>
+    def comparison_expression(self, node_parent):
+        print(f'Current token: {self.current_token.lexeme} at line {self.current_token.line_number}')
+        comparison_statement_node = ParseTreeNode("<comparison-expression>", node_parent)
+        node_parent.add_child(comparison_statement_node)
+
+        if self.current_token.lexeme == "BOTH SAEM":
+            equal_operator_node = ParseTreeNode("<equal-operator>", comparison_statement_node)
+            comparison_statement_node.add_child(equal_operator_node)
+            self.addParseTreeNode(equal_operator_node)
+            self.consume_current_token()
+
+            self.comparison_value_operands(equal_operator_node)
+        elif self.current_token.lexeme == "DIFFRINT":
+            not_equal_operator_node = ParseTreeNode("<not-equal-operator>", comparison_statement_node)
+            comparison_statement_node.add_child(not_equal_operator_node)
+            self.addParseTreeNode(not_equal_operator_node)
+            self.consume_current_token()
+
+            self.comparison_value_operands(not_equal_operator_node)
+        else:
+            # Error handling for invalid comparison operator
+            raise Exception(f"Syntax Error: Line {self.current_token.line_number + 1}\n\t Expected comparison operator but got {self.current_token.token_type}")
 
     # <concat-loop> ::= <var-value> | <var-value> AN <concat-loop>
     def concat_loop(self, node_parent):
@@ -303,12 +431,9 @@ class SyntaxAnalyzer:
         if self.current_token.token_type == "arithmetic_operator":
             self.arithmetic_expression(node_parent)
         elif self.current_token.token_type == "logical_operator":
-            self.logical_expression(node_parent)
+            self.boolean_expression(node_parent)
         elif self.current_token.token_type == "comparison_operator":
-            comparison_expression_node = ParseTreeNode("<comparison-expression>", node_parent)
-            node_parent.add_child(comparison_expression_node)
-
-            # self.comparison_expression(comparison_expression_node)
+            self.comparison_expression(node_parent)
         elif self.current_token.token_type == "concatenation_operator":
             self.concatenation_expression(node_parent)
         # TODO: double check if pwede rin typecasting
@@ -327,10 +452,9 @@ class SyntaxAnalyzer:
             var_value_node.add_child(literal_value_node)
             
             self.literal_value(literal_value_node) # Add the literal value node as a child of the var value node
-
         # If the value is a variable identifier
         elif self.current_token.token_type == "identifiers":
-            variable_value_node = ParseTreeNode("<another-variable-value>", var_value_node)
+            variable_value_node = ParseTreeNode("<variable-value>", var_value_node)
             var_value_node.add_child(variable_value_node)
 
             self.addParseTreeNode(variable_value_node)
@@ -385,6 +509,7 @@ class SyntaxAnalyzer:
             self.var(node_parent)
 
     # <variable-declaration> ::= WAZZUP <var> BUHBYE
+    # TODO: implement I HAS A and ITZ keywords outside of variable declaration
     def variable_declaration(self):
         variable_declaration_node = ParseTreeNode("<variable-declaration>", self.parse_tree)
         self.parse_tree.add_child(variable_declaration_node)
