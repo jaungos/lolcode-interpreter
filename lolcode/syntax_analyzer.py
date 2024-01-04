@@ -678,7 +678,8 @@ class SyntaxAnalyzer:
         else:
             self.valid_type(casting_node)
 
-    # <code-block> ::= <print> | <expression> | <operator> | <if-then> | <loop-opt> | <assignment> | <input> | <function-call> | <switch> | <casting> | <concat> | <code-block>
+    # <code-block> ::= <print> | <if-then> | <loop-opt> | <assignment> | <input> | <function-call> | <switch> | <casting> | <concat> | <expression> | <code-block>
+    # TODO: dito kayo magadd ng other keywords na pwede sa codeblock
     def codeblock(self, node_parent):
         # Check if the current token is the print keyword
         if self.check_if_token_matches_expected_token_types("print_keyword"):
@@ -699,8 +700,6 @@ class SyntaxAnalyzer:
         # Check if the current token is one of the keywords under expressions
         if self.current_token.token_type in ["arithmetic_operator", "logical_operator", "comparison_operator", "concatenation_operator"]:
             self.expression(node_parent)
-
-        # TODO: dito kayo magadd ng other keywords na pwede sa codeblock
 
         # Check if the current token is still not the program end delimiter
         if not self.check_if_token_matches_expected_token_types("program_end_delimiter"):
