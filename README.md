@@ -3,8 +3,11 @@
 ## About
 The program is a LOLCODE interpreter written in Python. It uses an object-oriented approach and uses recursive calls. LOLCODE's homepage is at lolcode.org.
 
-## Prerequisites
-- Python3 ([Python.org](https://www.python.org/))
+<div align = "center">
+
+![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)
+
+</div>
 
 ## Project Specifications
 ### WHITESPACES
