@@ -10,6 +10,17 @@ The program is a LOLCODE interpreter written in Python. It uses an object-orient
 
 </div>
 
+## Running
+Open a terminal at the root folder and run the command: 
+### Linux
+```bash
+python3 main.py
+```
+### Windows
+```bash
+python main.py
+```
+
 ## Project Specifications (LOLCODE v1.2)
 ### WHITESPACES
 One line per statement only. Each statement must be delimited by new lines. Only one whitespace between keywords is supported. Spaces inside YARN literals are respected and maintained. 
@@ -227,8 +238,3 @@ Functions can be called using the following syntax:
 I IZ <function name> [YR <expression1> [AN YR <expression2> AN YR <expression2>]] MKAY
 ```
 Expressions must be executed first before executing the function body.
-
-## Running
-Open a terminal at the root folder and run the command: 
-```bash
-python3 main.py
