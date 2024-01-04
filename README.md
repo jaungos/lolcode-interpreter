@@ -6,10 +6,11 @@ The program is a LOLCODE interpreter written in Python. It uses an object-orient
 <div align = "center">
 
 ![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)
+![LOLCODE](https://img.shields.io/badge/_-LOL-CC9900.svg?style=for-the-badge)
 
 </div>
 
-## Project Specifications
+## Project Specifications (LOLCODE v1.2)
 ### WHITESPACES
 One line per statement only. Each statement must be delimited by new lines. Only one whitespace between keywords is supported. Spaces inside YARN literals are respected and maintained. 
 
