@@ -85,17 +85,9 @@ class SemanticAnalyzer:
             return self.final_symbol_table.get_symbol(variable_value.value)
         
     def evaluate_arithmetic_expression(self, arithmetic_expression):
-        # TODO: remove this for debugging purposes ONLY
-        print(f'The number of children: {len(arithmetic_expression.children[1].children)}')
-        for child in arithmetic_expression.children[1].children:
-            print(f'\t\t\t\t{child.value}')
-
         # Get the two operands before performing the respective prefix arithmetic operation
         operand1 = self.evaluate_var_value(arithmetic_expression.children[1].children[0])
         operand2 = self.evaluate_var_value(arithmetic_expression.children[1].children[2])
-
-        # TODO: remove this for debugging purposes ONLY
-        print(f'\t\t\t\tOperand 1: {operand1.symbolValue} - {operand1.symbolClassification} | Operand 2: {operand2.symbolValue} - {operand2.symbolClassification}')
 
         # Typecast the operands to NUMBR or NUMBAR if they are not and it is possible
         if operand1.symbolClassification != "NUMBR" and operand1.symbolClassification != "NUMBAR":
@@ -110,37 +102,99 @@ class SemanticAnalyzer:
                 return SymbolEntity("NUMBR", symbol_value)
             else:
                 return SymbolEntity("NUMBAR", symbol_value)
+        elif arithmetic_expression.value == "<subtraction-operator>":
+            symbol_value = operand1.symbolValue - operand2.symbolValue
+
+            if type(symbol_value) == int:
+                return SymbolEntity("NUMBR", symbol_value)
+            else:
+                return SymbolEntity("NUMBAR", symbol_value)
+        elif arithmetic_expression.value == "<multiplication-operator>":
+            symbol_value = operand1.symbolValue * operand2.symbolValue
+
+            if type(symbol_value) == int:
+                return SymbolEntity("NUMBR", symbol_value)
+            else:
+                return SymbolEntity("NUMBAR", symbol_value)
+        elif arithmetic_expression.value == "<division-operator>":
+            symbol_value = operand1.symbolValue / operand2.symbolValue
+
+            if type(symbol_value) == int:
+                return SymbolEntity("NUMBR", symbol_value)
+            else:
+                return SymbolEntity("NUMBAR", symbol_value)
+        elif arithmetic_expression.value == "<modulo-operator>":
+            symbol_value = operand1.symbolValue % operand2.symbolValue
+
+            if type(symbol_value) == int:
+                return SymbolEntity("NUMBR", symbol_value)
+            else:
+                return SymbolEntity("NUMBAR", symbol_value)
+        elif arithmetic_expression.value == "<max-operator>":
+            symbol_value = max(operand1.symbolValue, operand2.symbolValue)
+
+            if type(symbol_value) == int:
+                return SymbolEntity("NUMBR", symbol_value)
+            else:
+                return SymbolEntity("NUMBAR", symbol_value)
+        elif arithmetic_expression.value == "<min-operator>":
+            symbol_value = min(operand1.symbolValue, operand2.symbolValue)
+
+            if type(symbol_value) == int:
+                return SymbolEntity("NUMBR", symbol_value)
+            else:
+                return SymbolEntity("NUMBAR", symbol_value)
+
+    def evaluate_boolean_expression(self, boolean_expression):
+        print(f'\t\t\t\tEvaluating: {boolean_expression.value}')
+
+    def evaluate_comparison_expression(self, comparison_expression):
+        operand1 = self.evaluate_var_value(comparison_expression.children[1].children[0])
+        operand2 = self.evaluate_var_value(comparison_expression.children[1].children[2])
+
+        if operand1.symbolClassification == "NUMBAR" or operand2.symbolClassification == "NUMBAR":
+            operand1 = self.type_cast_to_numbr_or_numbar(operand1)
+            operand2 = self.type_cast_to_numbr_or_numbar(operand2)
+
+        # if numbr/numbar compared to yarn/troof/noob and vice versa, it should always be false
+        if operand1.symbolClassification == "NUMBR" or operand1.symbolClassification == "NUMBAR":
+            if operand2.symbolClassification == "YARN" or operand2.symbolClassification == "TROOF" or operand2.symbolClassification == "NOOB":
+                return SymbolEntity("TROOF", "FAIL")
+        elif operand2.symbolClassification == "NUMBR" or operand2.symbolClassification == "NUMBAR":
+            if operand1.symbolClassification == "YARN" or operand1.symbolClassification == "TROOF" or operand1.symbolClassification == "NOOB":
+                return SymbolEntity("TROOF", "FAIL")
             
-        #     # return self.evaluate_addition_expression(arithmetic_expression.children[0])
-        # elif arithmetic_expression.value == "<subtraction-operator>":
-        #     pass
-        #     # return self.evaluate_subtraction_expression(arithmetic_expression.children[0])
-        # elif arithmetic_expression.value == "<multiplication-operator>":
-        #     pass
-        #     # return self.evaluate_multiplication_expression(arithmetic_expression.children[0])
-        # elif arithmetic_expression.value == "<division-operator>":
-        #     pass
-        #     # return self.evaluate_division_expression(arithmetic_expression.children[0])
-        # elif arithmetic_expression.value == "<modulo-operator>":
-        #     pass
-        #     # return self.evaluate_modulo_expression(arithmetic_expression.children[0])
-        # elif arithmetic_expression.value == "<max-operator>":
-        #     pass
-        #     # return self.evaluate_max_expression(arithmetic_expression.children[0])
-        # elif arithmetic_expression.value == "<min-operator>":
-        #     pass
-        #     # return self.evaluate_min_expression(arithmetic_expression.children[0])
+        if comparison_expression.value == "<equal-operator>":
+            if operand1.symbolValue == operand2.symbolValue:
+                return SymbolEntity("TROOF", "WIN")
+            else:
+                return SymbolEntity("TROOF", "FAIL")
+        elif comparison_expression.value == "<not-equal-operator>":
+            if operand1.symbolValue != operand2.symbolValue:
+                return SymbolEntity("TROOF", "WIN")
+            else:
+                return SymbolEntity("TROOF", "FAIL")
+
+    def evaluate_concatenation_expression(self, concatenation_expression):
+        concatenated_string = ""
+
+        for concatenation_information in concatenation_expression.children:
+            if concatenation_information.value == "<var-value>":
+                concatenated_string = ''.join([concatenated_string, str(self.evaluate_var_value(concatenation_information).symbolValue)])
+            elif concatenation_information.value == "<concat-loop>":
+                concatenated_string = ''.join([concatenated_string, str(self.evaluate_concatenation_expression(concatenation_information).symbolValue)])
+
+        return SymbolEntity("YARN", concatenated_string)
 
     def evaluate_expression_value(self, expression_value):
         if expression_value.value == "<arithmetic-expression>":
-            print(f'\t\t\t\tArith: {expression_value.children[0].value}')
             return self.evaluate_arithmetic_expression(expression_value.children[0])
         elif expression_value.value == "<boolean-expression>":
-            print(f'\t\t\t\tBoolean: {expression_value.children[0].value}')
+            self.evaluate_boolean_expression(expression_value.children[0])
         elif expression_value.value == "<comparison-expression>":
-            print(f'\t\t\t\tComparison: {expression_value.children[0].value}')
+            return self.evaluate_comparison_expression(expression_value.children[0])
         elif expression_value.value == "<concatenation-expression>":
-            print(f'\t\t\t\tConcat: {expression_value.children[0].value}')
+            return self.evaluate_concatenation_expression(expression_value.children[1])
 
         return SymbolEntity("YARN", "TEST")
 
@@ -155,8 +209,6 @@ class SemanticAnalyzer:
             print(f'\t\t\tNext child: {variable_type.children[0].value}')
             return self.evaluate_expression_value(variable_type.children[0])
 
-        # return SymbolEntity("YARN", "TEST")
-    
     def evaluate_var_value(self, variable_value):
         print(f'\tCurrent node: {variable_value.value}')
         if variable_value.value == "<var-value>":

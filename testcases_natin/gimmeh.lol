@@ -1,8 +1,9 @@
 HAI
     WAZZUP
         I HAS A name ITZ SMOOSH "John" AN "Doe"
-        I HAS A num ITZ SUM OF 2 AN 1.5
-        
+        I HAS A num ITZ SUM OF QUOSHUNT OF PRODUKT OF 3 AN 4 AN 2 AN 1.5
+        I HAS A booLEAn ITZ ANY OF BOTH OF x AN EITHER OF NOT x AN y AN y AN NOT y MKAY
+        I HAS A kumpara ITZ BOTH SAEM 5 AN SMALLR OF 4 AN 2.5
     BUHBYE
 
     
