@@ -22,4 +22,4 @@ interpreter.run_lexer() # Run the lexical analyzer
 
 interpreter.run_parser() # Run the syntax analyzer
 
-# interpreter.run_interpreter() # Run the semantic analyzer
+interpreter.run_interpreter() # Run the semantic analyzer

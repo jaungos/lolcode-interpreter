@@ -3,10 +3,11 @@
 """
 
 class ParseTreeNode:
-    def __init__(self, value, parent):
+    def __init__(self, value, parent, line_number):
         self.value = value
         self.parent = parent
         self.children = []
+        self.line_number = line_number
 
     def add_child(self, child):
         self.children.append(child)

@@ -29,15 +29,22 @@ class SemanticAnalyzer:
 
         # Evaluate the parse tree
         for node in self.parse_tree.children:
-            # TODO: add function before HAI and after KTHXBYE
-            if node.value == "HAI":
-                continue
+            # TODO: Remove this for debugging purposes ONLY
+            print(f'Current node: {node.value}')
+            
+            # TODO: add function before HAI and after KTHXBYE and make it the if for this control flow statement
+            if node.value == "<program-start-delimiter>":
+                print(f'Program start delimiter: {node.children[0].value} at line {node.children[0].line_number + 1}')
+                if node.children[0].value == "HAI" and len(node.children) == 1:
+                    continue
             elif node.value == "<variable-declaration>":
                 self.evaluate_variable_declaration(node)
             elif node.value == "<code-block>":
                 self.evaluate_code_block(node)
             elif node.value == "KTHXBYE":
                 continue
+            else:
+                raise Exception(f"Invalid syntax {node.value}")
         
         # TODO: remove this for debugging purposes ONLY
         print(f'Finished evaluating the parse tree\n')
