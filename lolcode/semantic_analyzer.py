@@ -12,24 +12,20 @@ suppress_newline_print = False
 class SemanticAnalyzer:
     def __init__(self, parse_tree):
         self.parse_tree = parse_tree
-        self.symbol_table = Lol_Symbol_Table()
+        self.final_symbol_table = Lol_Symbol_Table()
 
     def run_semantic_analyzer(self):
-        if self.parse_tree is None:
-            # TODO: error printing
-            raise Exception("Parse tree is empty")
-        else:
-            self.evaluate()
+        self.evaluate()
 
     def print_symbol_table(self):
-        self.symbol_table.get_symbols()
+        self.final_symbol_table.get_symbols()
         print("Symbol Table:")
-        for symbol in self.symbol_table.symbols:
-            print(f'\t{symbol}: {self.symbol_table.symbols[symbol].symbolClassification} - {self.symbol_table.symbols[symbol].symbolValue}')
+        for symbol in self.final_symbol_table.symbols:
+            print(f'\t{symbol}: {self.final_symbol_table.symbols[symbol].symbolClassification} - {self.final_symbol_table.symbols[symbol].symbolValue}')
         
     def evaluate(self):
         # Add the IT in the symbol table
-        self.symbol_table.add_symbol("IT", SymbolEntity("NOOB", None))
+        self.final_symbol_table.add_symbol("IT", SymbolEntity("NOOB", None))
 
         # Evaluate the parse tree
         for node in self.parse_tree.children:
@@ -42,6 +38,9 @@ class SemanticAnalyzer:
                 self.evaluate_code_block(node)
             elif node.value == "KTHXBYE":
                 continue
+        
+        # TODO: remove this for debugging purposes ONLY
+        print(f'Finished evaluating the parse tree\n')
 
     def evaluate_var(self, variableDeclared):
         symbolValue = SymbolEntity("NOOB", None) # Initialize a new SymbolEntity
@@ -51,13 +50,13 @@ class SemanticAnalyzer:
                 symbolName = variable_information.children[0].value
                 
                 # Check if the variable is already declared
-                if self.symbol_table.check_if_symbol_exists(symbolName):
+                if self.final_symbol_table.check_if_symbol_exists(symbolName):
                     raise Exception(f"Variable {symbolName} already declared")
 
             elif variable_information.value == "<var-initialization>":
                 symbolValue = self.evaluate_var_value(variable_information) # Pass the <var-initialization> node
             
-        self.symbol_table.add_symbol(symbolName, symbolValue)
+        self.final_symbol_table.add_symbol(symbolName, symbolValue)
     
     def evaluate_var_value(self, variable_value):
         for value in variable_value.children:
@@ -78,24 +77,11 @@ class SemanticAnalyzer:
         variable_value = variable_type.children[0].children[0].value
 
         return SymbolEntity(variable_classification, variable_value)
-            
+
     def evaluate_variable_declaration(self, variable_declarations):
         for variable_declared in variable_declarations.children:
             if variable_declared.value == "<var>":
                 self.evaluate_var(variable_declared) # Pass the <var> node
-
-    def evaluate_code_block(self, code_block):
-        for statement in code_block.children:
-            print(f'\n\t{statement.value}\n')
-            # TODO: complete all the possible statements
-            if statement.value == "<print>":
-                self.evaluate_print(statement)
-            elif statement.value == "<input>":
-                self.evaluate_input(statement)
-            elif statement.value == "<assignment>":
-                self.evaluate_assignment(statement)
-            elif statement.value == "<casting>":
-                self.evaluate_casting(statement)
 
     def evaluate_print_loop(self, print_loop):
         string_to_print = ""
@@ -135,21 +121,21 @@ class SemanticAnalyzer:
         for input_information in input_statement.children:
             if input_information.value == "<varident>":
                 symbolName = input_information.children[0].value
-                if not self.symbol_table.check_if_symbol_exists(symbolName):
+                if not self.final_symbol_table.check_if_symbol_exists(symbolName):
                     raise Exception(f"Variable {symbolName} does not exist")
                 
-        self.symbol_table.update_symbol(symbolName, SymbolEntity("YARN", user_input))
+        self.final_symbol_table.update_symbol(symbolName, SymbolEntity("YARN", user_input))
 
     def evaluate_assignment(self, assignment_statement):
         for assignment_information in assignment_statement.children:
             if assignment_information.value == "<varident>":
                 symbolName = assignment_information.children[0].value
-                if not self.symbol_table.check_if_symbol_exists(symbolName):
+                if not self.final_symbol_table.check_if_symbol_exists(symbolName):
                     raise Exception(f"Variable {symbolName} does not exist")
             elif assignment_information.value == "<var-value>":
                 symbolValue = self.evaluate_var_value_type(assignment_information.children[0])
                 
-        self.symbol_table.update_symbol(symbolName, symbolValue)
+        self.final_symbol_table.update_symbol(symbolName, symbolValue)
 
     def evaluate_data_type(self, data_type):
         if data_type.value == "<integer-data-type>":
@@ -167,11 +153,11 @@ class SemanticAnalyzer:
         for casting_information in casting_statement.children:
             if casting_information.value == "<varident>":
                 symbolName = casting_information.children[0].value
-                if not self.symbol_table.check_if_symbol_exists(symbolName):
+                if not self.final_symbol_table.check_if_symbol_exists(symbolName):
                     raise Exception(f"Variable {symbolName} does not exist")
             elif casting_information.value == "<valid-data-type>":
                 # Get the current symbol value
-                oldSymbolValue = self.symbol_table.get_symbol(symbolName)
+                oldSymbolValue = self.final_symbol_table.get_symbol(symbolName)
                 # Get the new symbol classification
                 newSymbolClassification = self.evaluate_data_type(casting_information.children[0])
                 print(newSymbolClassification)
@@ -213,4 +199,17 @@ class SemanticAnalyzer:
                 else:
                     raise Exception(f"Invalid data type {newSymbolClassification}")
                 
-        self.symbol_table.update_symbol(symbolName, SymbolEntity(newSymbolClassification, newSymbolValue))
+        self.final_symbol_table.update_symbol(symbolName, SymbolEntity(newSymbolClassification, newSymbolValue))
+
+    def evaluate_code_block(self, code_block):
+        for statement in code_block.children:
+            print(f'\n\t{statement.value}\n')
+            # TODO: complete all the possible statements
+            if statement.value == "<print>":
+                self.evaluate_print(statement)
+            elif statement.value == "<input>":
+                self.evaluate_input(statement)
+            elif statement.value == "<assignment>":
+                self.evaluate_assignment(statement)
+            elif statement.value == "<casting>":
+                self.evaluate_casting(statement)

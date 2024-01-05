@@ -10,8 +10,8 @@ from lolcode.syntax_analyzer import SyntaxAnalyzer
 from lolcode.semantic_analyzer import SemanticAnalyzer
 
 class Interpreter:
-    def __init__(self, source_code):
-        self.source_code = source_code
+    def __init__(self):
+        self.source_code = ""
         self.tokens = []
         self.parse_tree = []
 
@@ -21,14 +21,40 @@ class Interpreter:
 
     """
         TODO:
-            - Check if the file passed is a .lol file
-            - Check if there is a file passed a non-empty string
-                - set the initial self.source_code to an empty string
-                - update it once a method for reading the file is created
-                    - the method is just to check the 2 above conditions
+            - error messages and delete the print statements
     """
+    def isTokenListEmpty(self):
+        return len(self.tokens) == 0
+    
+    def read_file(self, file_path):
+        self.source_code = file_path
+
+    def checkIfFileExists(self):
+        # TODO: improve error prompting
+        if self.source_code == "":
+            raise Exception("No file path passed. Please pass a file path.")
+        
+        # Check if the file is a .lol file
+        if self.source_code[-4:] != ".lol":
+            raise Exception("File is not a .lol file. Please pass a valid .lol file.")
+
+        # Check if the file exists
+        try:
+            file = open(self.source_code, "r")
+        except FileNotFoundError:
+            raise Exception("File not found. Please pass a valid file path.")
+        
+        # Check if the file is empty
+        if file.read() == "":
+            raise Exception("File is empty. No source code to interpret.")
+        
+        # Close the file
+        file.close()
 
     def run_lexer(self):
+        # Check for the validity of the file path
+        self.checkIfFileExists()
+
         print("Running the lexical analyzer...")
 
         # Instantiate the lexical analyzer
@@ -39,6 +65,10 @@ class Interpreter:
 
     def run_parser(self):
         print("\n\nRunning the syntax analyzer...")
+
+        # TODO: improve error prompting
+        if self.isTokenListEmpty():
+            raise Exception("No tokens to parse.")
 
         # Instantiate the syntax analyzer
         self.parser = SyntaxAnalyzer(self.tokens)
@@ -51,6 +81,10 @@ class Interpreter:
 
     def run_interpreter(self):
         print("\n\nRunning the semantic analyzer...")
+
+        # TODO: improve error prompting
+        if self.parse_tree is None:
+            raise Exception("No parse tree to analyze.")
 
         # Instantiate the semantic analyzer
         self.semantic_analyzer = SemanticAnalyzer(self.parse_tree)

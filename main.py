@@ -13,8 +13,10 @@
 from lolcode.interpreter import Interpreter
 
 # Initialize the lexical analyzer
-interpreter = Interpreter("testcases_natin/gimmeh.lol")
-# interpreter = Interpreter("project-testcases/05_bool.lol")
+interpreter = Interpreter()
+
+interpreter.read_file("testcases_natin/gimmeh.lol")
+# interpreter.read_file("testcases_natin/05_bool.lol")
 
 interpreter.run_lexer() # Run the lexical analyzer
 
