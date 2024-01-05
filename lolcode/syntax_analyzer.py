@@ -40,7 +40,8 @@ class SyntaxAnalyzer:
             return False
         
     def check_if_program_delimiters_are_present(self):
-        if "program_start_delimiter" in self.symbol_table[0].token_type and "program_end_delimiter" in self.symbol_table[-1].token_type:
+        # Check if the program start and end delimiters are present anywhere in the symbol table
+        if "program_start_delimiter" in [token.get_token_type() for token in self.symbol_table] and "program_end_delimiter" in [token.get_token_type() for token in self.symbol_table]:
             return True
         else:
             return False
@@ -710,7 +711,7 @@ class SyntaxAnalyzer:
     # <program> ::= <function> HAI <variable-declaration> <code-block> KTHXBYE <function>
     def program(self):
         # TODO: Check if the current token is the function declaration start delimiter
-        # if self.current_token.token_type == "function_declaration_start_delimiter":
+        # while self.current_token.token_type == "function_declaration_start_delimiter":
 
         # Check if the current token is the HAI keyword
         if self.check_if_token_matches_expected_token_types("program_start_delimiter"):
@@ -718,6 +719,9 @@ class SyntaxAnalyzer:
             self.parse_tree.add_child(start_delimiter_node)
             self.addParseTreeNode(start_delimiter_node) # Add the HAI node as a child of the root node
             self.consume_current_token() # Update the current token to the next token
+        else:
+            # Error handling for missing HAI keyword
+            raise Exception(f"Syntax Error: Line {self.current_token.line_number + 1}\n\t Expected program start delimiter but got {self.current_token.token_type}")
 
         # Check if the current token is the variable declaration start delimiter
         if self.check_if_token_matches_expected_token_types("variable_declaration_start_delimiter"):
@@ -739,8 +743,12 @@ class SyntaxAnalyzer:
             self.parse_tree.add_child(end_delimiter_node)
             self.addParseTreeNode(end_delimiter_node)
             self.consume_current_token() # Update the current token to the next token
+        else:
+            # Error handling for missing KTHXBYE keyword
+            raise Exception(f"Syntax Error: Line {self.current_token.line_number + 1}\n\t Expected program end delimiter but got {self.current_token.token_type}")
 
         # TODO: Check if the current token is the function declaration start delimiter
+        # while self.current_token.token_type == "function_declaration_start_delimiter":
 
     # ===================== Functions for Removing Linebreak Delimiters =====================
     def remove_linebreak_delimiters(self):
