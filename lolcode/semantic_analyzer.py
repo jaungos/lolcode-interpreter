@@ -34,15 +34,15 @@ class SemanticAnalyzer:
             
             # TODO: add function before HAI and after KTHXBYE and make it the if for this control flow statement
             if node.value == "<program-start-delimiter>":
-                print(f'Program start delimiter: {node.children[0].value} at line {node.children[0].line_number + 1}')
                 if node.children[0].value == "HAI" and len(node.children) == 1:
                     continue
             elif node.value == "<variable-declaration>":
                 self.evaluate_variable_declaration(node)
             elif node.value == "<code-block>":
                 self.evaluate_code_block(node)
-            elif node.value == "KTHXBYE":
-                continue
+            elif node.value == "<program-end-delimiter>":
+                if node.children[0].value == "KTHXBYE" and len(node.children) == 1:
+                    continue
             else:
                 raise Exception(f"Invalid syntax {node.value}")
         

@@ -558,22 +558,18 @@ class SyntaxAnalyzer:
             self.var(node_parent)
 
     # <variable-declaration> ::= WAZZUP <var> BUHBYE
-    def variable_declaration(self):
-        self.currently_inside_variable_declaration_section = True
-        variable_declaration_node = ParseTreeNode("<variable-declaration>", self.parse_tree, self.current_token.line_number)
-        self.parse_tree.add_child(variable_declaration_node)
-
-        variable_declaration_start_delimiter_node = ParseTreeNode("<variable-declaration-start-delimiter>", variable_declaration_node, self.current_token.line_number)
-        variable_declaration_node.add_child(variable_declaration_start_delimiter_node)
+    def variable_declaration(self, node_parent):
+        variable_declaration_start_delimiter_node = ParseTreeNode("<variable-declaration-start-delimiter>", node_parent, self.current_token.line_number)
+        node_parent.add_child(variable_declaration_start_delimiter_node)
         self.addParseTreeNode(variable_declaration_start_delimiter_node) # Add the WAZZUP node as a child of the variable declaration node
         self.consume_current_token() # Update the current token to the next token
 
         if self.check_if_token_matches_expected_token_types("variable_declaration_keyword"):
-            self.var(variable_declaration_node) # Add the var node as a child of the variable declaration node
+            self.var(node_parent) # Add the var node as a child of the variable declaration node
 
         if self.check_if_token_matches_expected_token_types("variable_declaration_end_delimiter"):
-            variable_declaration_end_delimiter_node = ParseTreeNode("<variable-declaration-end-delimiter>", variable_declaration_node, self.current_token.line_number)
-            variable_declaration_node.add_child(variable_declaration_end_delimiter_node)
+            variable_declaration_end_delimiter_node = ParseTreeNode("<variable-declaration-end-delimiter>", node_parent, self.current_token.line_number)
+            node_parent.add_child(variable_declaration_end_delimiter_node)
             self.addParseTreeNode(variable_declaration_end_delimiter_node) # Add the BUHBYE node as a child of the variable declaration node
             self.consume_current_token() # Update the current token to the next token
 
@@ -725,7 +721,11 @@ class SyntaxAnalyzer:
 
         # Check if the current token is the variable declaration start delimiter
         if self.check_if_token_matches_expected_token_types("variable_declaration_start_delimiter"):
-            self.variable_declaration() # Call the variable declaration grammar rule
+            self.currently_inside_variable_declaration_section = True
+
+            variable_declaration_node = ParseTreeNode("<variable-declaration>", self.parse_tree, self.current_token.line_number)
+            self.parse_tree.add_child(variable_declaration_node)
+            self.variable_declaration(variable_declaration_node) # Call the variable declaration grammar rule
 
         # Check if the current token is already the statement start delimiter
         if not self.check_if_token_matches_expected_token_types("variable_declaration_start_delimiter"):
