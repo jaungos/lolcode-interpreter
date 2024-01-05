@@ -106,7 +106,7 @@ class LexicalAnalyzer:
                         break
 
                     for pattern in lexeme_regex_identifiers:
-                        # Check if match is found
+                        # Check if a match is found
                         match = lexicalanalyzer.match(lexeme_regex_identifiers[pattern], line[self.character_position:])
                         if match:
                             # Check if the match is a YARN
@@ -135,6 +135,11 @@ class LexicalAnalyzer:
                             self.symbol_table.add_token(Token(match.group(), classify_passed_lexeme(pattern), self.line_number)) 
                             self.character_position += len(match.group())
                             break
+
+                    # Check for unpaired YARN delimiter tokens
+                    if len(line) > self.character_position and line[self.character_position] != " " and lexicalanalyzer.match("\"", line[self.character_position:]):
+                        # TODO: improve error prompting
+                        raise Exception(f'ERROR: Unpaired YARN delimiter token {line[self.character_position]} in line {self.line_number + 1}')
 
                     self.read_one_whitespace()
 

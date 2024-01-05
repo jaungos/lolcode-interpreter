@@ -22,6 +22,22 @@ class SemanticAnalyzer:
         print("Symbol Table:")
         for symbol in self.final_symbol_table.symbols:
             print(f'\t{symbol}: {self.final_symbol_table.symbols[symbol].symbolClassification} - {self.final_symbol_table.symbols[symbol].symbolValue}')
+    
+    def type_cast_to_numbr_or_numbar(self, symbol : SymbolEntity):
+        # Returns a SymbolEntity with the same symbolClassification but with a symbolValue of type NUMBR or NUMBAR
+        if symbol.symbolClassification == "TROOF":
+            if symbol.symbolValue == "WIN":
+                return SymbolEntity("NUMBR", 1)
+            else:
+                return SymbolEntity("NUMBR", 0)
+        else:
+            try:
+                if '.' in str(symbol.symbolValue):
+                    return SymbolEntity("NUMBAR", float(symbol.symbolValue))
+                else:
+                    return SymbolEntity("NUMBR", int(symbol.symbolValue))
+            except:
+                raise Exception(f"Cannot cast {symbol.symbolValue} to NUMBR or NUMBAR")
         
     def evaluate(self):
         # Add the IT in the symbol table
@@ -68,15 +84,65 @@ class SemanticAnalyzer:
         else:
             return self.final_symbol_table.get_symbol(variable_value.value)
         
+    def evaluate_arithmetic_expression(self, arithmetic_expression):
+        # TODO: remove this for debugging purposes ONLY
+        print(f'The number of children: {len(arithmetic_expression.children[1].children)}')
+        for child in arithmetic_expression.children[1].children:
+            print(f'\t\t\t\t{child.value}')
+
+        # Get the two operands before performing the respective prefix arithmetic operation
+        operand1 = self.evaluate_var_value(arithmetic_expression.children[1].children[0])
+        operand2 = self.evaluate_var_value(arithmetic_expression.children[1].children[2])
+
+        # TODO: remove this for debugging purposes ONLY
+        print(f'\t\t\t\tOperand 1: {operand1.symbolValue} - {operand1.symbolClassification} | Operand 2: {operand2.symbolValue} - {operand2.symbolClassification}')
+
+        # Typecast the operands to NUMBR or NUMBAR if they are not and it is possible
+        if operand1.symbolClassification != "NUMBR" and operand1.symbolClassification != "NUMBAR":
+            operand1 = self.type_cast_to_numbr_or_numbar(operand1)
+        if operand2.symbolClassification != "NUMBR" and operand2.symbolClassification != "NUMBAR":
+            operand2 = self.type_cast_to_numbr_or_numbar(operand2)
+
+        if arithmetic_expression.value == "<addition-operator>":
+            symbol_value = operand1.symbolValue + operand2.symbolValue
+
+            if type(symbol_value) == int:
+                return SymbolEntity("NUMBR", symbol_value)
+            else:
+                return SymbolEntity("NUMBAR", symbol_value)
+            
+        #     # return self.evaluate_addition_expression(arithmetic_expression.children[0])
+        # elif arithmetic_expression.value == "<subtraction-operator>":
+        #     pass
+        #     # return self.evaluate_subtraction_expression(arithmetic_expression.children[0])
+        # elif arithmetic_expression.value == "<multiplication-operator>":
+        #     pass
+        #     # return self.evaluate_multiplication_expression(arithmetic_expression.children[0])
+        # elif arithmetic_expression.value == "<division-operator>":
+        #     pass
+        #     # return self.evaluate_division_expression(arithmetic_expression.children[0])
+        # elif arithmetic_expression.value == "<modulo-operator>":
+        #     pass
+        #     # return self.evaluate_modulo_expression(arithmetic_expression.children[0])
+        # elif arithmetic_expression.value == "<max-operator>":
+        #     pass
+        #     # return self.evaluate_max_expression(arithmetic_expression.children[0])
+        # elif arithmetic_expression.value == "<min-operator>":
+        #     pass
+        #     # return self.evaluate_min_expression(arithmetic_expression.children[0])
+
     def evaluate_expression_value(self, expression_value):
         if expression_value.value == "<arithmetic-expression>":
             print(f'\t\t\t\tArith: {expression_value.children[0].value}')
+            return self.evaluate_arithmetic_expression(expression_value.children[0])
         elif expression_value.value == "<boolean-expression>":
             print(f'\t\t\t\tBoolean: {expression_value.children[0].value}')
         elif expression_value.value == "<comparison-expression>":
             print(f'\t\t\t\tComparison: {expression_value.children[0].value}')
         elif expression_value.value == "<concatenation-expression>":
             print(f'\t\t\t\tConcat: {expression_value.children[0].value}')
+
+        return SymbolEntity("YARN", "TEST")
 
     def evaluate_var_value_type(self, variable_type):
         print(f'\t\t{variable_type.value}')
@@ -87,32 +153,31 @@ class SemanticAnalyzer:
             return self.evaluate_another_variable_value(variable_type.children[0])
         elif variable_type.value == "<expression-value>":
             print(f'\t\t\tNext child: {variable_type.children[0].value}')
-            self.evaluate_expression_value(variable_type.children[0])
+            return self.evaluate_expression_value(variable_type.children[0])
 
-        return SymbolEntity("YARN", "TEST")
+        # return SymbolEntity("YARN", "TEST")
     
     def evaluate_var_value(self, variable_value):
-        for var_value in variable_value.children:
-            print(f'\tCurrent node: {var_value.value}')
-            if var_value.value == "<var-value>":
-                return self.evaluate_var_value_type(var_value.children[0]) # Pass the <literal-value> node
+        print(f'\tCurrent node: {variable_value.value}')
+        if variable_value.value == "<var-value>":
+            return self.evaluate_var_value_type(variable_value.children[0]) # Pass the <literal-value> | <variable-value> | <expression-value> node
 
     def evaluate_var(self, variable_declaration_block):
-        symbolValue = SymbolEntity("NOOB", None) # Initialize a new SymbolEntity
+        symbol_value = SymbolEntity("NOOB", None) # Initialize a new SymbolEntity
 
         for variable_information in variable_declaration_block.children:
             print(f'Current node: {variable_information.value}')
             if variable_information.value == "<identifier>":
-                symbolIdentifier = variable_information.children[0].value
+                symbol_identifier = variable_information.children[0].value
                 
                 # Check if the variable is already declared
-                if self.final_symbol_table.check_if_symbol_exists(symbolIdentifier):
-                    raise Exception(f"Variable {symbolIdentifier} has already been declared")
+                if self.final_symbol_table.check_if_symbol_exists(symbol_identifier):
+                    raise Exception(f"Variable {symbol_identifier} has already been declared")
 
             elif variable_information.value == "<var-initialization>":
-                symbolValue = self.evaluate_var_value(variable_information) # Pass the <var-initialization> node
+                symbol_value = self.evaluate_var_value(variable_information.children[1]) # Pass the <var-value> node
             
-        self.final_symbol_table.add_symbol(symbolIdentifier, symbolValue)
+        self.final_symbol_table.add_symbol(symbol_identifier, symbol_value)
 
     def evaluate_variable_declaration(self, variable_declaration_section):
         for variable_declaration_node in variable_declaration_section.children:
