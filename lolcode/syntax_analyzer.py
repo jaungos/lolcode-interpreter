@@ -534,7 +534,10 @@ class SyntaxAnalyzer:
 
                 var_node_initialization = ParseTreeNode("<var-initialization>", node_parent, self.current_token.line_number)
                 node_parent.add_child(var_node_initialization)
-                self.addParseTreeNode(var_node_initialization) # Add the ITZ node as a child of the var node initialization
+                
+                var_initialization_keyword = ParseTreeNode("<variable-initialization-keyword>", var_node_initialization, self.current_token.line_number)
+                var_node_initialization.add_child(var_initialization_keyword)
+                self.addParseTreeNode(var_initialization_keyword) # Add the ITZ node as a child of the var initialization keyword
                 self.consume_current_token() # Update the current token to the next token
 
                 self.var_value(var_node_initialization) # Add the var value node as a child of the var node initialization

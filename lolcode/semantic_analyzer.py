@@ -44,51 +44,86 @@ class SemanticAnalyzer:
                 if node.children[0].value == "KTHXBYE" and len(node.children) == 1:
                     continue
             else:
-                raise Exception(f"Invalid syntax {node.value}")
+                raise Exception(f"Syntax Error: Line {node.line_number + 1}\n")
         
         # TODO: remove this for debugging purposes ONLY
         print(f'Finished evaluating the parse tree\n')
 
-    def evaluate_var(self, variableDeclared):
+    def evaluate_literal_value(self, literal_value):
+        if literal_value.value == "<yarn-literal>":
+            return SymbolEntity("YARN", literal_value.children[0].value)
+        elif literal_value.value == "<numbr-literal>":
+            return SymbolEntity("NUMBR", int(literal_value.children[0].value))
+        elif literal_value.value == "<numbar-literal>":
+            return SymbolEntity("NUMBAR", float(literal_value.children[0].value))
+        elif literal_value.value == "<troof-literal>":
+            if literal_value.children[0].value == "WIN":
+                return SymbolEntity("TROOF", "WIN")
+            else:
+                return SymbolEntity("TROOF", "FAIL")
+            
+    def evaluate_another_variable_value(self, variable_value):
+        if not self.final_symbol_table.check_if_symbol_exists(variable_value.value):
+            raise Exception(f"Variable {variable_value.value} has not been declared")
+        else:
+            return self.final_symbol_table.get_symbol(variable_value.value)
+        
+    def evaluate_expression_value(self, expression_value):
+        if expression_value.value == "<arithmetic-expression>":
+            print(f'\t\t\t\tArith: {expression_value.children[0].value}')
+        elif expression_value.value == "<boolean-expression>":
+            print(f'\t\t\t\tBoolean: {expression_value.children[0].value}')
+        elif expression_value.value == "<comparison-expression>":
+            print(f'\t\t\t\tComparison: {expression_value.children[0].value}')
+        elif expression_value.value == "<concatenation-expression>":
+            print(f'\t\t\t\tConcat: {expression_value.children[0].value}')
+
+    def evaluate_var_value_type(self, variable_type):
+        print(f'\t\t{variable_type.value}')
+        
+        if variable_type.value == "<literal-value>":
+            return self.evaluate_literal_value(variable_type.children[0])
+        elif variable_type.value == "<variable-value>":
+            return self.evaluate_another_variable_value(variable_type.children[0])
+        elif variable_type.value == "<expression-value>":
+            print(f'\t\t\tNext child: {variable_type.children[0].value}')
+            self.evaluate_expression_value(variable_type.children[0])
+
+        return SymbolEntity("YARN", "TEST")
+    
+    def evaluate_var_value(self, variable_value):
+        for var_value in variable_value.children:
+            print(f'\tCurrent node: {var_value.value}')
+            if var_value.value == "<var-value>":
+                return self.evaluate_var_value_type(var_value.children[0]) # Pass the <literal-value> node
+
+    def evaluate_var(self, variable_declaration_block):
         symbolValue = SymbolEntity("NOOB", None) # Initialize a new SymbolEntity
 
-        for variable_information in variableDeclared.children:
-            if variable_information.value == "<varident>":
-                symbolName = variable_information.children[0].value
+        for variable_information in variable_declaration_block.children:
+            print(f'Current node: {variable_information.value}')
+            if variable_information.value == "<identifier>":
+                symbolIdentifier = variable_information.children[0].value
                 
                 # Check if the variable is already declared
-                if self.final_symbol_table.check_if_symbol_exists(symbolName):
-                    raise Exception(f"Variable {symbolName} already declared")
+                if self.final_symbol_table.check_if_symbol_exists(symbolIdentifier):
+                    raise Exception(f"Variable {symbolIdentifier} has already been declared")
 
             elif variable_information.value == "<var-initialization>":
                 symbolValue = self.evaluate_var_value(variable_information) # Pass the <var-initialization> node
             
-        self.final_symbol_table.add_symbol(symbolName, symbolValue)
-    
-    def evaluate_var_value(self, variable_value):
-        for value in variable_value.children:
-            if value.value == "<var-value>":
-                return self.evaluate_var_value_type(value.children[0]) # Pass the <literal-value> node
+        self.final_symbol_table.add_symbol(symbolIdentifier, symbolValue)
 
-    def evaluate_var_value_type(self, variable_type):
-        variable_classification = variable_type.children[0].value
-        if variable_classification == "<yarn-literal>":
-            variable_classification = "YARN"
-        elif variable_classification == "<numbr-literal>":
-            variable_classification = "NUMBR"
-        elif variable_classification == "<numbar-literal>":
-            variable_classification = "NUMBAR"
-        elif variable_classification == "<troof-literal>":
-            variable_classification = "TROOF"
-            
-        variable_value = variable_type.children[0].children[0].value
-
-        return SymbolEntity(variable_classification, variable_value)
-
-    def evaluate_variable_declaration(self, variable_declarations):
-        for variable_declared in variable_declarations.children:
-            if variable_declared.value == "<var>":
-                self.evaluate_var(variable_declared) # Pass the <var> node
+    def evaluate_variable_declaration(self, variable_declaration_section):
+        for variable_declaration_node in variable_declaration_section.children:
+            print(f'{variable_declaration_node.value}')
+            if variable_declaration_node.value == "<variable-declaration-start-delimiter>" or variable_declaration_node.value == "<variable-declaration-end-delimiter>":
+                continue
+            elif variable_declaration_node.value == "<var>":
+                self.evaluate_var(variable_declaration_node) # Pass the <var> node
+            else:
+                # TODO: improve error prompting
+                raise Exception(f"Syntax error: Line {variable_declaration_node.line_number}\n")
 
     def evaluate_print_loop(self, print_loop):
         string_to_print = ""
