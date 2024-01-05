@@ -16,7 +16,7 @@ from lolcode.interpreter import Interpreter
 interpreter = Interpreter()
 
 interpreter.read_file("testcases_natin/gimmeh.lol")
-# interpreter.read_file("testcases_natin/05_bool.lol")
+# interpreter.read_file("project-testcases/01_variables.lol")
 
 interpreter.run_lexer() # Run the lexical analyzer
 
