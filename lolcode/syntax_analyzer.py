@@ -680,7 +680,7 @@ class SyntaxAnalyzer:
         else:
             self.valid_type(casting_node)
 
-    # code block for else (allows OIC only)
+    # code block for else (allows OIC and O RLY )
     def else_codeblock(self, node_parent):
         # Check if the current token is the print keyword
         if self.check_if_token_matches_expected_token_types("print_keyword"):
@@ -752,7 +752,7 @@ class SyntaxAnalyzer:
 
             self.if_else_codeblock(node_parent)
 
-    # <if_then> ::= O RLY? <conditional-statement> YA RLY <code-block> NO WAI <code-block> OIC | O RLY? <conditional-statement> YA RLY <code-block> OIC | O RLY? <conditional-statement> NO WAI <code-block> OIC
+    # <if_then> ::= <conditional-statement> O RLY? YA RLY <if-else-code-block> NO WAI <else-code-block> OIC
     def if_then_statement(self, node_parent):
         if_then_statement_node = ParseTreeNode("<if-then>", node_parent, self.current_token.line_number)
         node_parent.add_child(if_then_statement_node)
