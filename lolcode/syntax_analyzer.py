@@ -467,7 +467,9 @@ class SyntaxAnalyzer:
         concat_statement_node = ParseTreeNode("<concatenation-expression>", node_parent, self.current_token.line_number)
         node_parent.add_child(concat_statement_node)
 
-        self.addParseTreeNode(concat_statement_node) # Add the SMOOSH node as a child of the concat statement node
+        concatenation_start_delimiter_node = ParseTreeNode("<concatenation-start-delimiter>", concat_statement_node, self.current_token.line_number)
+        concat_statement_node.add_child(concatenation_start_delimiter_node)
+        self.addParseTreeNode(concatenation_start_delimiter_node) # Add the SMOOSH node as a child of the concat statement node
         self.consume_current_token() # Update the current token to the next token
 
         self.concat_loop(concat_statement_node) # Add the concat loop node as a child of the concat statement node

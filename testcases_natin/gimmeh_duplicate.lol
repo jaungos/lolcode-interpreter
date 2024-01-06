@@ -7,6 +7,8 @@ HAI
         I HAS A bool ITZ FAIL
         I HAS A DUPLICATE ITZ age
         I HAS A duplicate ITZ seven
+        I HAS A x
+        I HAS A y
     BUHBYE
 
     GIMMEH name
@@ -17,6 +19,13 @@ HAI
 
     VISIBLE SUM OF QUOSHUNT OF PRODUKT OF 3 AN 4 AN 2 AN 1.5
     GIMMEH age
+
+    VISIBLE name + " hello world" !
+
+    VISIBLE SUM OF age AN 100
+
+    GIMMEH x
+    GIMMEH y
 
     VISIBLE BOTH OF x AN y
     VISIBLE EITHER OF x AN y
