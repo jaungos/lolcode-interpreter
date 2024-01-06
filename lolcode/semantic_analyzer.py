@@ -20,8 +20,11 @@ class SemanticAnalyzer:
     def print_symbol_table(self):
         self.final_symbol_table.get_symbols()
         print("Symbol Table:")
+        symbol_table = []
         for symbol in self.final_symbol_table.symbols:
             print(f'\t{symbol}: {self.final_symbol_table.symbols[symbol].symbolClassification} - {self.final_symbol_table.symbols[symbol].symbolValue}')
+            symbol_table.append((symbol, self.final_symbol_table.symbols[symbol].symbolValue))
+        return symbol_table
     
     def type_cast_to_numbr_or_numbar(self, symbol : SymbolEntity):
         # Returns a SymbolEntity with the same symbolClassification but with a symbolValue of type NUMBR or NUMBAR

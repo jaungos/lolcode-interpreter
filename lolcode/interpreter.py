@@ -61,7 +61,7 @@ class Interpreter:
         self.lexer = LexicalAnalyzer(self.source_code)
 
         self.tokens = self.lexer.run_lexical_analyzer()
-        self.lexer.print_tokens()
+        return self.lexer.print_tokens()
 
     def run_parser(self):
         print("\n\nRunning the syntax analyzer...")
@@ -91,5 +91,5 @@ class Interpreter:
 
         self.semantic_analyzer.run_semantic_analyzer()
 
-        self.semantic_analyzer.print_symbol_table()
+        return self.semantic_analyzer.print_symbol_table()
 
