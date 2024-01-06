@@ -684,22 +684,46 @@ class SyntaxAnalyzer:
     def if_then_statement(self, node_parent):
         if_then_statement_node = ParseTreeNode("<if-then>", node_parent, self.current_token.line_number)
         node_parent.add_child(if_then_statement_node)
-
-        if_then_start_delimiter_node = ParseTreeNode("<if-then-start-delimiter>", if_then_statement_node, self.current_token.line_number)
-        if_then_statement_node.add_child(if_then_start_delimiter_node)
-        self.addParseTreeNode(if_then_start_delimiter_node)
         self.consume_current_token()
-        
-        if self.check_if_token_matches_expected_token_types("opening_conditional_statement_delimiter"):
-            self.addParseTreeNode(if_then_statement_node)
-            self.consume_current_token()
-        if self.check_if_token_matches_expected_token_types("alternative_conditional_statement_delimiter"):
-            self.addParseTreeNode(if_then_statement_node)
-            self.consume_current_token()
 
-        if self.check_if_token_matches_expected_token_types("closing_conditional_statement_delimiter"):
+        # Get the YA RLY keyword
+        if self.check_if_token_matches_expected_token_types("if_conditional_statement_delimiter"):
+            if_conditional_statement_delimiter = ParseTreeNode("<if>", if_then_statement_node, self.current_token.line_number)
+            if_then_statement_node.add_child(if_conditional_statement_delimiter)
+            self.addParseTreeNode(if_conditional_statement_delimiter)
             self.consume_current_token()
-    # <conditional-statement> ::= <boolean-expression> | <comparison-expression>
+            
+            # add YA RLY's code block
+            self.codeblock(if_conditional_statement_delimiter) # Add the code block node as a child of the if conditional statement node
+
+            # Check if the current token is the NO WAI keyword
+            if self.check_if_token_matches_expected_token_types("else_conditional_statement_statement_delimiter"):
+                else_conditional_statement_delimiter = ParseTreeNode("<else>", if_then_statement_node, self.current_token.line_number)
+                if_then_statement_node.add_child(else_conditional_statement_delimiter)
+                self.addParseTreeNode(else_conditional_statement_delimiter)
+                self.consume_current_token()
+
+                # add NO WAI's code block
+                self.codeblock(else_conditional_statement_delimiter)
+                
+                # Check if the current token is the OIC keyword
+                if self.check_if_token_matches_expected_token_types("closing_conditional_statement_delimiter"):
+                    conditional_statement_end_delimiter = ParseTreeNode("<if-else-end>", if_then_statement_node, self.current_token.line_number)
+                    if_then_statement_node.add_child(conditional_statement_end_delimiter)
+                    self.addParseTreeNode(conditional_statement_end_delimiter)
+                    self.consume_current_token()
+                else:
+                    # Error handling for missing OIC keyword
+                    raise Exception(f"Syntax Error: Line {self.current_token.line_number + 1}\n\t Expected conditional statement end delimiter but got {self.current_token.token_type}")
+            else:
+                # Error handling for missing NO WAI keyword
+                raise Exception(f"Syntax Error: Line {self.current_token.line_number + 1}\n\t Expected else conditional statement start delimiter but got {self.current_token.token_type}")
+        else:
+            # Error handling for missing YA RLY keyword
+            raise Exception(f"Syntax Error: Line {self.current_token.line_number + 1}\n\t Expected if conditional statement start delimiter but got {self.current_token.token_type}")
+        
+    # <switch> ::= WTF? <var-value> OMG <case> OMGWTF <code-block> OIC
+    
 
     # <code-block> ::= <print> | <if-then> | <loop-opt> | <assignment> | <input> | <function-call> | <switch> | <casting> | <concat> | <expression> | <code-block>
     # TODO: dito kayo magadd ng other keywords na pwede sa codeblock
@@ -711,14 +735,6 @@ class SyntaxAnalyzer:
         # FOR IF-ELSE STATEMENTS
         # Check if the current token is the if keyword
         if self.check_if_token_matches_expected_token_types("opening_conditional_statement_delimiter"):
-            self.if_then_statement(node_parent)
-
-        # Check if the current token is the ya rly, mebbe, or no wai keyword
-        if self.check_if_token_matches_expected_token_types("alternative_conditional_statement_delimiter"):
-            self.if_then_statement(node_parent)
-
-        # Check if the current token is the closing conditional statement delimiter (oic)
-        if self.check_if_token_matches_expected_token_types("closing_conditional_statement_delimiter"):
             self.if_then_statement(node_parent)
 
         # Check if the current token is an identifier for the assignment keyword/typecasting assignment keyword
@@ -741,7 +757,7 @@ class SyntaxAnalyzer:
         # Check if the current token is still not the program end delimiter
         if not self.check_if_token_matches_expected_token_types("program_end_delimiter"):
             # TODO: add the other keywords
-            if self.current_token.token_type not in ["print_keyword", "opening_conditional_statement_delimiter", "alternative_conditional_statement_delimiter", "closing_conditional_statement_delimiter", "identifiers", "input_keyword", "type_casting_delimiter", "arithmetic_operator", "logical_operator", "comparison_operator", "concatenation_operator"]:
+            if self.current_token.token_type not in ["print_keyword", "opening_conditional_statement_delimiter", "identifiers", "input_keyword", "type_casting_delimiter", "arithmetic_operator", "logical_operator", "comparison_operator", "concatenation_operator"]:
                 # Error handling for invalid code block
                 # TODO: improve error handling for invalid code block ---- change error message
                 raise Exception(f"Syntax Error: Line {self.current_token.line_number + 1}\n\t Expected code block but got {self.current_token.token_type}")

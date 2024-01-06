@@ -21,5 +21,11 @@ HAI
             VISIBLE SUM OF num AN num
         NO WAI
             BOTH SAEM choice AN 0
+            O RLY?
+                YA RLY
+                    VISIBLE "Bye!"
+                NO WAI
+                    VISIBLE "Invalid choice!"
+            OIC
     OIC
 KTHXBYE
