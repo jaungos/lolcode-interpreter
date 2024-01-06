@@ -680,6 +680,78 @@ class SyntaxAnalyzer:
         else:
             self.valid_type(casting_node)
 
+    # code block for else (allows OIC only)
+    def else_codeblock(self, node_parent):
+        # Check if the current token is the print keyword
+        if self.check_if_token_matches_expected_token_types("print_keyword"):
+            self.print_statement(node_parent)
+            
+        # Check if the current token is the if keyword
+        if self.check_if_token_matches_expected_token_types("opening_conditional_statement_delimiter"):
+            self.if_then_statement(node_parent)
+            
+        # Check if the current token is the OIC keyword
+        if self.check_if_token_matches_expected_token_types("closing_conditional_statement_delimiter"):
+            return
+
+        # Check if the current token is an identifier for the assignment keyword/typecasting assignment keyword
+        if self.check_if_token_matches_expected_token_types("identifiers"):
+            self.assignment_statement(node_parent)
+
+        # Check if the current token is the input keyword
+        if self.check_if_token_matches_expected_token_types("input_keyword"):
+            self.input_statement(node_parent)
+
+        # Check if the current token is the type casting keyword
+        if self.check_if_token_matches_expected_token_types("type_casting_delimiter"):
+            self.casting_statement(node_parent)
+
+        # Check if the current token is one of the keywords under expressions
+        if self.current_token.token_type in ["arithmetic_operator", "logical_operator", "comparison_operator", "concatenation_operator"]:
+            self.expression(node_parent)
+
+        # Check if the current token is still not the program end delimiter
+        if not self.check_if_token_matches_expected_token_types("program_end_delimiter"):
+            if self.current_token.token_type not in ["print_keyword", "identifiers", "opening_conditional_statement_delimiter","closing_conditional_statement_delimiter", "input_keyword", "type_casting_delimiter", "arithmetic_operator", "logical_operator", "comparison_operator", "concatenation_operator"]:
+                # Error handling for invalid code block
+                raise Exception(f"Syntax Error: Line {self.current_token.line_number + 1}\n\t Expected else code block but got {self.current_token.token_type}")
+
+            self.else_codeblock(node_parent)
+    
+    # code block for if-else (does not allow starting delim)
+    def if_else_codeblock(self, node_parent):
+        # Check if the current token is the print keyword
+        if self.check_if_token_matches_expected_token_types("print_keyword"):
+            self.print_statement(node_parent)
+
+        # Check if the current token is the else keyword
+        if self.check_if_token_matches_expected_token_types("else_conditional_statement_delimiter"):
+            return
+
+        # Check if the current token is an identifier for the assignment keyword/typecasting assignment keyword
+        if self.check_if_token_matches_expected_token_types("identifiers"):
+            self.assignment_statement(node_parent)
+
+        # Check if the current token is the input keyword
+        if self.check_if_token_matches_expected_token_types("input_keyword"):
+            self.input_statement(node_parent)
+
+        # Check if the current token is the type casting keyword
+        if self.check_if_token_matches_expected_token_types("type_casting_delimiter"):
+            self.casting_statement(node_parent)
+
+        # Check if the current token is one of the keywords under expressions
+        if self.current_token.token_type in ["arithmetic_operator", "logical_operator", "comparison_operator", "concatenation_operator"]:
+            self.expression(node_parent)
+
+        # Check if the current token is still not the program end delimiter
+        if not self.check_if_token_matches_expected_token_types("program_end_delimiter"):
+            if self.current_token.token_type not in ["print_keyword", "identifiers", "input_keyword", "type_casting_delimiter", "arithmetic_operator", "logical_operator", "comparison_operator", "concatenation_operator"]:
+                # Error handling for invalid code block
+                raise Exception(f"Syntax Error: Line {self.current_token.line_number + 1}\n\t Expected if-else code block but got {self.current_token.token_type}")
+
+            self.if_else_codeblock(node_parent)
+
     # <if_then> ::= O RLY? <conditional-statement> YA RLY <code-block> NO WAI <code-block> OIC | O RLY? <conditional-statement> YA RLY <code-block> OIC | O RLY? <conditional-statement> NO WAI <code-block> OIC
     def if_then_statement(self, node_parent):
         if_then_statement_node = ParseTreeNode("<if-then>", node_parent, self.current_token.line_number)
@@ -692,20 +764,18 @@ class SyntaxAnalyzer:
             if_then_statement_node.add_child(if_conditional_statement_delimiter)
             self.addParseTreeNode(if_conditional_statement_delimiter)
             self.consume_current_token()
-            
-            # add YA RLY's code block
-            self.codeblock(if_conditional_statement_delimiter) # Add the code block node as a child of the if conditional statement node
 
+            self.if_else_codeblock(if_then_statement_node)
             # Check if the current token is the NO WAI keyword
-            if self.check_if_token_matches_expected_token_types("else_conditional_statement_statement_delimiter"):
+            if self.check_if_token_matches_expected_token_types("else_conditional_statement_delimiter"):
                 else_conditional_statement_delimiter = ParseTreeNode("<else>", if_then_statement_node, self.current_token.line_number)
                 if_then_statement_node.add_child(else_conditional_statement_delimiter)
                 self.addParseTreeNode(else_conditional_statement_delimiter)
                 self.consume_current_token()
 
                 # add NO WAI's code block
-                self.codeblock(else_conditional_statement_delimiter)
-                
+                self.else_codeblock(else_conditional_statement_delimiter)
+
                 # Check if the current token is the OIC keyword
                 if self.check_if_token_matches_expected_token_types("closing_conditional_statement_delimiter"):
                     conditional_statement_end_delimiter = ParseTreeNode("<if-else-end>", if_then_statement_node, self.current_token.line_number)
@@ -721,9 +791,9 @@ class SyntaxAnalyzer:
         else:
             # Error handling for missing YA RLY keyword
             raise Exception(f"Syntax Error: Line {self.current_token.line_number + 1}\n\t Expected if conditional statement start delimiter but got {self.current_token.token_type}")
-        
+
     # <switch> ::= WTF? <var-value> OMG <case> OMGWTF <code-block> OIC
-    
+
 
     # <code-block> ::= <print> | <if-then> | <loop-opt> | <assignment> | <input> | <function-call> | <switch> | <casting> | <concat> | <expression> | <code-block>
     # TODO: dito kayo magadd ng other keywords na pwede sa codeblock
@@ -752,7 +822,6 @@ class SyntaxAnalyzer:
         # Check if the current token is one of the keywords under expressions
         if self.current_token.token_type in ["arithmetic_operator", "logical_operator", "comparison_operator", "concatenation_operator"]:
             self.expression(node_parent)
-
 
         # Check if the current token is still not the program end delimiter
         if not self.check_if_token_matches_expected_token_types("program_end_delimiter"):
