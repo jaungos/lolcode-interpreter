@@ -70,11 +70,11 @@ class SyntaxAnalyzer:
     
     def analyze(self):
         # Remove all comments and linebreak delimiters
-        self.check_if_comments_are_valid()    
+        self.check_if_comments_are_valid()
         self.remove_all_comments()
         self.remove_linebreak_delimiters()
 
-        # Update the current token if there are still tokens left 
+        # Update the current token if there are still tokens left
         if self.check_if_symbol_table_is_empty():
             # TODO: Improve the error printing for empty file
             print("File is empty...")
@@ -685,6 +685,19 @@ class SyntaxAnalyzer:
         if self.check_if_token_matches_expected_token_types("print_keyword"):
             self.print_statement(node_parent)
 
+        # FOR IF-ELSE STATEMENTS
+        # Check if the current token is the if keyword
+        if self.check_if_token_matches_expected_token_types("opening_conditional_statement_delimiter"):
+            self.if_then_statement(node_parent)
+
+        # Check if the current token is the ya rly, mebbe, or no wai keyword
+        if self.check_if_token_matches_expected_token_types("alternative_conditional_statement_delimiter"):
+            self.conditional_statement(node_parent)
+
+        # Check if the current token is the closing conditional statement delimiter (oic)
+        if self.check_if_token_matches_expected_token_types("closing_conditional_statement_delimiter"):
+            self.consume_current_token()
+
         # Check if the current token is an identifier for the assignment keyword/typecasting assignment keyword
         if self.check_if_token_matches_expected_token_types("identifiers"):
             self.assignment_statement(node_parent)
@@ -700,6 +713,7 @@ class SyntaxAnalyzer:
         # Check if the current token is one of the keywords under expressions
         if self.current_token.token_type in ["arithmetic_operator", "logical_operator", "comparison_operator", "concatenation_operator"]:
             self.expression(node_parent)
+
 
         # Check if the current token is still not the program end delimiter
         if not self.check_if_token_matches_expected_token_types("program_end_delimiter"):
@@ -739,7 +753,7 @@ class SyntaxAnalyzer:
             codeblock_node = ParseTreeNode("<code-block>", self.parse_tree, self.current_token.line_number)
             self.parse_tree.add_child(codeblock_node)
             self.codeblock(codeblock_node)
-        
+
         # Check if the current token is the KTHXBYE keyword
         if self.check_if_token_matches_expected_token_types("program_end_delimiter"):
             end_delimiter_node = ParseTreeNode("<program-end-delimiter>", self.parse_tree, self.current_token.line_number)
