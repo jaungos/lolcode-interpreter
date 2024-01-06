@@ -718,11 +718,69 @@ class SyntaxAnalyzer:
 
             self.else_codeblock(node_parent)
     
+    # code block for mebbe (allows mebbe and else only)
+    def mebbe_codeblock(self, node_parent):
+        # Check if the current token is the print keyword
+        if self.check_if_token_matches_expected_token_types("print_keyword"):
+            self.print_statement(node_parent)
+            
+        # Check if the current token is the if keyword
+        if self.check_if_token_matches_expected_token_types("opening_conditional_statement_delimiter"):
+            self.if_then_statement(node_parent)
+            
+        # Check if the current token is the OIC keyword
+        if self.check_if_token_matches_expected_token_types("closing_conditional_statement_delimiter"):
+            return
+
+        # Check if the current token is an identifier for the assignment keyword/typecasting assignment keyword
+        if self.check_if_token_matches_expected_token_types("identifiers"):
+            self.assignment_statement(node_parent)
+
+        # Check if the current token is the input keyword
+        if self.check_if_token_matches_expected_token_types("input_keyword"):
+            self.input_statement(node_parent)
+
+        # Check if the current token is the type casting keyword
+        if self.check_if_token_matches_expected_token_types("type_casting_delimiter"):
+            self.casting_statement(node_parent)
+
+        # Check if the current token is one of the keywords under expressions
+        if self.current_token.token_type in ["arithmetic_operator", "logical_operator", "comparison_operator", "concatenation_operator"]:
+            self.expression(node_parent)
+
+        # Check if the current token is still not the program end delimiter
+        if not self.check_if_token_matches_expected_token_types("program_end_delimiter"):
+            if self.current_token.token_type not in ["print_keyword", "identifiers", "opening_conditional_statement_delimiter","closing_conditional_statement_delimiter", "input_keyword", "type_casting_delimiter", "arithmetic_operator", "logical_operator", "comparison_operator", "concatenation_operator"]:
+                # Error handling for invalid code block
+                raise Exception(f"Syntax Error: Line {self.current_token.line_number + 1}\n\t Expected else code block but got {self.current_token.token_type}")
+
+            self.mebbe_codeblock(node_parent)
+    
+    # loop for mebbe
+    # <mebbe-loop> :== <mebbe-loop> | <mebbe-loop> <mebbe-loop>
+    def mebbe_loop(self, node_parent):
+        # if keyword is mebbe
+        # TODO: get expression
+        if self.check_if_token_matches_expected_token_types("alternative_conditional_statement_delimiter"):
+            mebbe_loop_node = ParseTreeNode("<mebbe-loop>", node_parent, self.current_token.line_number)
+            node_parent.add_child(mebbe_loop_node)
+            self.addParseTreeNode(mebbe_loop_node)
+            self.consume_current_token()
+
+            # add mebbe's code block
+            self.mebbe_codeblock(mebbe_loop_node)
+
+            # Check if the current token is MEBBE
+                
     # code block for if-else (does not allow starting delim)
     def if_else_codeblock(self, node_parent):
         # Check if the current token is the print keyword
         if self.check_if_token_matches_expected_token_types("print_keyword"):
             self.print_statement(node_parent)
+
+        # Check if the current token is the if keyword
+        if self.check_if_token_matches_expected_token_types("opening_conditional_statement_delimiter"):
+            self.if_then_statement(node_parent)
 
         # Check if the current token is the else keyword
         if self.check_if_token_matches_expected_token_types("else_conditional_statement_delimiter"):
@@ -746,7 +804,7 @@ class SyntaxAnalyzer:
 
         # Check if the current token is still not the program end delimiter
         if not self.check_if_token_matches_expected_token_types("program_end_delimiter"):
-            if self.current_token.token_type not in ["print_keyword", "identifiers", "input_keyword", "type_casting_delimiter", "arithmetic_operator", "logical_operator", "comparison_operator", "concatenation_operator"]:
+            if self.current_token.token_type not in ["print_keyword", "identifiers", "opening_conditional_statement_delimiter","else_conditional_statement_delimiter","input_keyword", "type_casting_delimiter", "arithmetic_operator", "logical_operator", "comparison_operator", "concatenation_operator"]:
                 # Error handling for invalid code block
                 raise Exception(f"Syntax Error: Line {self.current_token.line_number + 1}\n\t Expected if-else code block but got {self.current_token.token_type}")
 
@@ -766,6 +824,11 @@ class SyntaxAnalyzer:
             self.consume_current_token()
 
             self.if_else_codeblock(if_then_statement_node)
+            
+            # Check if the current token is MEBBE
+            if self.check_if_token_matches_expected_token_types("alternative_conditional_statement_delimiter"):
+                # TODO: Do mebbe loop
+                self.mebbeloop(if_then_statement_node)
             # Check if the current token is the NO WAI keyword
             if self.check_if_token_matches_expected_token_types("else_conditional_statement_delimiter"):
                 else_conditional_statement_delimiter = ParseTreeNode("<else>", if_then_statement_node, self.current_token.line_number)
