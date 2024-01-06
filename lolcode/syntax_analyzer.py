@@ -680,6 +680,27 @@ class SyntaxAnalyzer:
         else:
             self.valid_type(casting_node)
 
+    # <if_then> ::= O RLY? <conditional-statement> YA RLY <code-block> NO WAI <code-block> OIC | O RLY? <conditional-statement> YA RLY <code-block> OIC | O RLY? <conditional-statement> NO WAI <code-block> OIC
+    def if_then_statement(self, node_parent):
+        if_then_statement_node = ParseTreeNode("<if-then>", node_parent, self.current_token.line_number)
+        node_parent.add_child(if_then_statement_node)
+
+        if_then_start_delimiter_node = ParseTreeNode("<if-then-start-delimiter>", if_then_statement_node, self.current_token.line_number)
+        if_then_statement_node.add_child(if_then_start_delimiter_node)
+        self.addParseTreeNode(if_then_start_delimiter_node)
+        self.consume_current_token()
+        
+        if self.check_if_token_matches_expected_token_types("opening_conditional_statement_delimiter"):
+            self.addParseTreeNode(if_then_statement_node)
+            self.consume_current_token()
+        if self.check_if_token_matches_expected_token_types("alternative_conditional_statement_delimiter"):
+            self.addParseTreeNode(if_then_statement_node)
+            self.consume_current_token()
+
+        if self.check_if_token_matches_expected_token_types("closing_conditional_statement_delimiter"):
+            self.consume_current_token()
+    # <conditional-statement> ::= <boolean-expression> | <comparison-expression>
+
     # <code-block> ::= <print> | <if-then> | <loop-opt> | <assignment> | <input> | <function-call> | <switch> | <casting> | <concat> | <expression> | <code-block>
     # TODO: dito kayo magadd ng other keywords na pwede sa codeblock
     def codeblock(self, node_parent):
@@ -694,11 +715,11 @@ class SyntaxAnalyzer:
 
         # Check if the current token is the ya rly, mebbe, or no wai keyword
         if self.check_if_token_matches_expected_token_types("alternative_conditional_statement_delimiter"):
-            self.conditional_statement(node_parent)
+            self.if_then_statement(node_parent)
 
         # Check if the current token is the closing conditional statement delimiter (oic)
         if self.check_if_token_matches_expected_token_types("closing_conditional_statement_delimiter"):
-            self.consume_current_token()
+            self.if_then_statement(node_parent)
 
         # Check if the current token is an identifier for the assignment keyword/typecasting assignment keyword
         if self.check_if_token_matches_expected_token_types("identifiers"):
@@ -720,7 +741,7 @@ class SyntaxAnalyzer:
         # Check if the current token is still not the program end delimiter
         if not self.check_if_token_matches_expected_token_types("program_end_delimiter"):
             # TODO: add the other keywords
-            if self.current_token.token_type not in ["print_keyword", "identifiers", "input_keyword", "type_casting_delimiter", "arithmetic_operator", "logical_operator", "comparison_operator", "concatenation_operator"]:
+            if self.current_token.token_type not in ["print_keyword", "opening_conditional_statement_delimiter", "alternative_conditional_statement_delimiter", "closing_conditional_statement_delimiter", "identifiers", "input_keyword", "type_casting_delimiter", "arithmetic_operator", "logical_operator", "comparison_operator", "concatenation_operator"]:
                 # Error handling for invalid code block
                 # TODO: improve error handling for invalid code block ---- change error message
                 raise Exception(f"Syntax Error: Line {self.current_token.line_number + 1}\n\t Expected code block but got {self.current_token.token_type}")

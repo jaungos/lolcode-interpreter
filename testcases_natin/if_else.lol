@@ -1,8 +1,9 @@
 HAI
-
-    I HAS A choice
-    I HAS A num
-
+    WAZZUP
+        I HAS A choice
+        I HAS A num
+    BUHBYE
+    
     VISIBLE "Calculator"
     VISIBLE "1. Add"
     VISIBLE "0. Exit"
