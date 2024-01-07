@@ -19,6 +19,8 @@ HAI
             VISIBLE "Enter second number: "
             GIMMEH num
             VISIBLE SUM OF num AN num
+        MEBBE
+            VISIBLE "Bye!"
         NO WAI
             BOTH SAEM choice AN 0
     OIC

@@ -723,14 +723,10 @@ class SyntaxAnalyzer:
         # Check if the current token is the print keyword
         if self.check_if_token_matches_expected_token_types("print_keyword"):
             self.print_statement(node_parent)
-            
+
         # Check if the current token is the if keyword
         if self.check_if_token_matches_expected_token_types("opening_conditional_statement_delimiter"):
             self.if_then_statement(node_parent)
-            
-        # Check if the current token is the OIC keyword
-        if self.check_if_token_matches_expected_token_types("closing_conditional_statement_delimiter"):
-            return
 
         # Check if the current token is an identifier for the assignment keyword/typecasting assignment keyword
         if self.check_if_token_matches_expected_token_types("identifiers"):
@@ -755,12 +751,11 @@ class SyntaxAnalyzer:
                 raise Exception(f"Syntax Error: Line {self.current_token.line_number + 1}\n\t Expected else code block but got {self.current_token.token_type}")
 
             self.mebbe_codeblock(node_parent)
-    
+
     # loop for mebbe
     # <mebbe-loop> :== <mebbe-loop> | <mebbe-loop> <mebbe-loop>
     def mebbe_loop(self, node_parent):
         # if keyword is mebbe
-        # TODO: get expression
         if self.check_if_token_matches_expected_token_types("alternative_conditional_statement_delimiter"):
             mebbe_loop_node = ParseTreeNode("<mebbe-loop>", node_parent, self.current_token.line_number)
             node_parent.add_child(mebbe_loop_node)
@@ -768,10 +763,17 @@ class SyntaxAnalyzer:
             self.consume_current_token()
 
             # add mebbe's code block
-            self.mebbe_codeblock(mebbe_loop_node)
+            self.codeblock(mebbe_loop_node)
 
             # Check if the current token is MEBBE
-                
+            if self.check_if_token_matches_expected_token_types("alternative_conditional_statement_delimiter"):
+                another_mebbe_loop_node = ParseTreeNode("<another-mebbe>", mebbe_loop_node, self.current_token.line_number)
+                mebbe_loop_node.add_child(another_mebbe_loop_node)
+                self.addParseTreeNode(another_mebbe_loop_node)
+                self.consume_current_token()
+
+                self.mebbe_loop(mebbe_loop_node)
+
     # code block for if-else (does not allow starting delim)
     def if_else_codeblock(self, node_parent):
         # Check if the current token is the print keyword
@@ -824,11 +826,13 @@ class SyntaxAnalyzer:
             self.consume_current_token()
 
             self.if_else_codeblock(if_then_statement_node)
-            
+
             # Check if the current token is MEBBE
             if self.check_if_token_matches_expected_token_types("alternative_conditional_statement_delimiter"):
                 # TODO: Do mebbe loop
-                self.mebbeloop(if_then_statement_node)
+                print("mebbe")
+                self.mebbe_loop(if_then_statement_node)
+
             # Check if the current token is the NO WAI keyword
             if self.check_if_token_matches_expected_token_types("else_conditional_statement_delimiter"):
                 else_conditional_statement_delimiter = ParseTreeNode("<else>", if_then_statement_node, self.current_token.line_number)

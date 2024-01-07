@@ -38,6 +38,7 @@ def get_all_lexeme_regex_patterns():
         "GIMMEH": r'GIMMEH',
         "O RLY?": r'O\sRLY\?',
         "YA RLY": r'YA\sRLY',
+        "MEBBE": r'MEBBE',
         "NO WAI": r'NO\sWAI',
         "OIC": r'OIC',
         "WTF?": r'WTF\?',
