@@ -504,8 +504,6 @@ class SemanticAnalyzer:
             self.final_symbol_table.update_symbol("IT", self.type_cast_to_troof(self.final_symbol_table.get_symbol("IT")))
 
         for conditional_statement in conditional_statements.children:
-            print("TEST", str(self.final_symbol_table.get_symbol("IT").symbolValue))
-            # print(f'\t{conditional_statement.value}')
             if str(self.final_symbol_table.get_symbol("IT").symbolValue) == "WIN" : # if true, go to true's codeblock
                 if conditional_statement.value == "<if-statement>":
                     self.evaluate_code_block(conditional_statement.children[1])
@@ -526,7 +524,7 @@ class SemanticAnalyzer:
             
     def evaluate_conditional_case(self, conditional_statement):
         self.evaluate_conditional_statements(conditional_statement) 
-        
+
     def evaluate_code_block(self, code_block):
         for statement in code_block.children:
             print(f'\t{statement.value}')
