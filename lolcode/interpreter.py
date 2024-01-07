@@ -1,7 +1,6 @@
 """
-
-    This file is used to define the interpreter for the lolcode language.
-    TODO: add brief description of what an interpreter does in this lolcode compiler
+    This file is used to define and implement the interpreter for the LOLCode language.
+    Holds the respective functions that would call the lexical analyzer, syntax analyzer, and semantic analyzer.
 """
 
 # Import the needed modules

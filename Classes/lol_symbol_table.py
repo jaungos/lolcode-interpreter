@@ -1,5 +1,6 @@
 """
     This file is used to define the symbol table class for the compiler.
+    This class is also used as a parse tree for the compiler.
 """
 
 class Lol_Symbol_Table:

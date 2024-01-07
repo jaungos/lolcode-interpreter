@@ -1,7 +1,7 @@
 """
 
-    This file is used to define the semantic analyzer for the lolcode language.
-    TODO: add brief description of what an interpreter does in this lolcode compiler
+    This file is used to define and implement the semantic analyzer of the interpreter for the LOLCode language.
+    Evaluates the passed parse tree and checks for semantic errors.
 """
 
 from Classes.lol_symbol_table import Lol_Symbol_Table

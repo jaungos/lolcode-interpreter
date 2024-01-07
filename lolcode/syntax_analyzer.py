@@ -1,6 +1,6 @@
 """
-    This file is used to define the syntax analyzer for the lolcode language.
-    TODO: add brief description of what a parser does in this lolcode compiler
+    This file is used to define and implement the syntax analyzer of the interpreter for the LOLCode language.
+    Analyze the syntax of the passed LOLCode file and check if it is valid by creating a matching parsee tree for it.
 """
 
 """
