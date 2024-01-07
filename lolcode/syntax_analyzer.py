@@ -763,7 +763,7 @@ class SyntaxAnalyzer:
             self.consume_current_token()
 
             # add mebbe's code block
-            self.codeblock(mebbe_loop_node)
+            self.if_else_codeblock(mebbe_loop_node)
 
             # Check if the current token is MEBBE
             if self.check_if_token_matches_expected_token_types("alternative_conditional_statement_delimiter"):
@@ -783,6 +783,10 @@ class SyntaxAnalyzer:
         # Check if the current token is the if keyword
         if self.check_if_token_matches_expected_token_types("opening_conditional_statement_delimiter"):
             self.if_then_statement(node_parent)
+            
+        # Check if the current token is MEBBE
+        if self.check_if_token_matches_expected_token_types("alternative_conditional_statement_delimiter"):
+            return
 
         # Check if the current token is the else keyword
         if self.check_if_token_matches_expected_token_types("else_conditional_statement_delimiter"):
