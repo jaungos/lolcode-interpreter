@@ -21,6 +21,8 @@ HAI
             VISIBLE SUM OF num AN num
         MEBBE BOTH SAEM choice AN 0
             VISIBLE "Bye!"
+        MEBBE BOTH SAEM choice AN 5
+            VISIBLE "Bye!"
         NO WAI
             BOTH SAEM choice AN 0
     OIC
