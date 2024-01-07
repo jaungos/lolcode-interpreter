@@ -362,7 +362,7 @@ class SemanticAnalyzer:
         if string_symbol_entity is None:
             raise Exception(f"Syntax error: Line {print_statement.line_number + 1}\n")
     
-        # TODO: adopt based on how to print in GUI
+        
         if self.suppress_newline_print:
             print(f'{string_symbol_entity.symbolValue}', end='')
             self.suppress_newline_print = False
@@ -384,7 +384,6 @@ class SemanticAnalyzer:
 
         for input_information in input_statement.children:
             if input_information.value == "<input-operator>":
-                # TODO: adopt based on how to input in GUI
                 user_input = self.trigger_callback()
             elif input_information.value == "<identifier>":
                 symbol_name = input_information.children[0].value

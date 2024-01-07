@@ -61,7 +61,10 @@ class Interpreter:
         # Instantiate the lexical analyzer
         self.lexer = LexicalAnalyzer(self.source_code)
 
+        # Run the lexical analyzer
         self.tokens = self.lexer.run_lexical_analyzer()
+        
+        # Return the tokens
         return self.lexer.print_tokens()
 
     def run_parser(self):
@@ -74,10 +77,13 @@ class Interpreter:
         # Instantiate the syntax analyzer
         self.parser = SyntaxAnalyzer(self.tokens)
 
+        # Run the syntax analyzer
         self.parser.run_syntax_analyzer()
 
+        # Return the parse tree
         self.parse_tree = self.parser.parse_tree
-
+        
+        # Print the parse tree
         self.parser.print_parse_tree()
 
     def run_interpreter(self, input_callback):

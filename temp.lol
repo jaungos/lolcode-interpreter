@@ -8,7 +8,7 @@ HAI
     GIMMEH monde
 
     VISIBLE SUM OF monde AN num
-    VISIBLE monde !
+    VISIBLE monde
 
     GIMMEH num
     GIMMEH monde
