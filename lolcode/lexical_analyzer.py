@@ -1,6 +1,6 @@
 """
-    This file is used to define the lexical analyzer for the lolcode language.
-    TODO: add brief description of what a lexer does in this lolcode compiler
+    This file is used to define and implement the lexical analyzer of the interpreter for the LOLCode language.
+    Reads the passed code file and classifies the lexemes in the said file by analyzing it line by line, character by character.
 """
 
 # Importing the needed libraries

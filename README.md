@@ -1,7 +1,7 @@
 # LOLCODE Interpreter in Python
 
 ## About
-The program is a LOLCODE interpreter written in Python. It uses an object-oriented approach and uses recursive calls. LOLCODE's homepage is at lolcode.org.
+The program is a LOLCODE interpreter written in Python. It uses an object-oriented approach and takes advantage of recursive function calls. LOLCODE's homepage is at lolcode.org.
 
 <div align = "center">
 
@@ -10,15 +10,25 @@ The program is a LOLCODE interpreter written in Python. It uses an object-orient
 
 </div>
 
+## Installing Dependencies 
+* For Windows, it should be run in a cmd terminal
+```bash
+py -m venv env
+env/Scripts/activate # Open a new cmd terminal in the same directory
+
+pip install tk
+```
+
 ## Running
 Open a terminal at the root folder and run the command: 
 ### Linux
 ```bash
 python3 main.py
 ```
-### Windows
+### Windows 
+* It should be run in the cmd terminal
 ```bash
-python main.py
+py main.py 
 ```
 
 ## Project Specifications (LOLCODE v1.2)

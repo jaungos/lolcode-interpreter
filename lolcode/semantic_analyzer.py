@@ -1,7 +1,7 @@
 """
 
-    This file is used to define the semantic analyzer for the lolcode language.
-    TODO: add brief description of what an interpreter does in this lolcode compiler
+    This file is used to define and implement the semantic analyzer of the interpreter for the LOLCode language.
+    Evaluates the passed parse tree and checks for semantic errors.
 """
 
 from Classes.lol_symbol_table import Lol_Symbol_Table
@@ -282,12 +282,16 @@ class SemanticAnalyzer:
 
     def evaluate_var_value_type(self, variable_type):
         if variable_type.value == "<literal-value>":
-            return self.evaluate_literal_value(variable_type.children[0])
+            literal_result = self.evaluate_literal_value(variable_type.children[0])
+            self.final_symbol_table.update_symbol("IT", literal_result) # Update the IT
+            return literal_result
         elif variable_type.value == "<variable-value>":
-            return self.evaluate_another_variable_value(variable_type.children[0])
+            variable_result = self.evaluate_another_variable_value(variable_type.children[0])
+            self.final_symbol_table.update_symbol("IT", variable_result) # Update the IT
+            return variable_result
         elif variable_type.value == "<expression-value>":
             expression_result = self.evaluate_expression_value(variable_type.children[0])
-            self.final_symbol_table.update_symbol("IT", expression_result)
+            self.final_symbol_table.update_symbol("IT", expression_result) # Update the IT
             return expression_result
 
     def evaluate_var_value(self, variable_value):
@@ -345,13 +349,16 @@ class SemanticAnalyzer:
 
         if string_symbol_entity is None:
             raise Exception(f"Syntax error: Line {print_statement.line_number + 1}\n")
-
+    
         # TODO: adopt based on how to print in GUI
         if self.suppress_newline_print:
             print(f'{string_symbol_entity.symbolValue}', end='')
             self.suppress_newline_print = False
         else:
             print(f'{string_symbol_entity.symbolValue}')
+
+        # Update the IT
+        self.final_symbol_table.update_symbol("IT", string_symbol_entity)
 
     def evaluate_input(self, input_statement):
         user_input = None
