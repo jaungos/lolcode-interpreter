@@ -5,9 +5,9 @@
 
 from lolcode.interpreter import Interpreter
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, Tk
 from tkinter import filedialog
-
+from tkinter import simpledialog
 class GUI:
     def __init__(self, root):
         self.root = root
@@ -52,15 +52,16 @@ class GUI:
         # Execute/Run button
         self.run_button = tk.Button(root, text="Execute", command=self.run_code)
         self.run_button.pack(pady=10)
-
+        
         # Console
         self.console_text = tk.Text(root, height=20, width=150, state=tk.DISABLED)
+        self.console_text.config(state=tk.DISABLED)
         self.console_text.pack()
 
         # Configure row and column weights for resizing
         self.root.grid_rowconfigure(1, weight=1)
         self.root.grid_columnconfigure(0, weight=1)
-        
+
     # Function to open a file
     def open_file(self):
         file_path = filedialog.askopenfilename(filetypes=[("lol files", "*.lol"), ("All files", "*.*")])
@@ -70,39 +71,75 @@ class GUI:
                 self.text_editor.delete(1.0, tk.END)
                 self.text_editor.insert(tk.END, code)
         self.file_path = file_path
-
-    # Function to run the code
-    def run_code(self):
-        # Get the code from the text editor
-        code = self.text_editor.get(1.0, tk.END)
-
-        # Initialize the lexical analyzer
-        interpreter = Interpreter()
-        interpreter.read_file(self.file_path)  # Read the file
-        tokens = interpreter.run_lexer() # Run the lexical analyzer and get the tokens
-        interpreter.run_parser() # Run the syntax analyzer
-        symbol_table = interpreter.run_interpreter() # Run the semantic analyzer
     
-        # Update List of Tokens
+    def input_callback(self):
+        retval = simpledialog.askstring("Input", "Enter input:")
+        return retval
+        
+    def run_code(self):
+        # Clear the token list and symbol table
         self.tokens_treeview.delete(*self.tokens_treeview.get_children())
-        for token, value in tokens:
-            self.tokens_treeview.insert("", "end", values=(token, value))
-            
-        # Update Symbol Table
-        # TODO: connect backend
         self.symbol_treeview.delete(*self.symbol_treeview.get_children())
-        for variable, value in symbol_table:
-            self.symbol_treeview.insert("", "end", values=(variable, value))
-
-        # Update Console (replace with your own console output)
-        # TODO: integrate console and inputs
-        console_output = "Program executed successfully!\n"
+        
+        # Clear the console
         self.console_text.config(state=tk.NORMAL)
-        self.console_text.insert(tk.END, console_output)
+        self.console_text.delete(1.0, tk.END)
         self.console_text.config(state=tk.DISABLED)
+        
+        try:
+            # Get the code from the text editor
+            code = self.text_editor.get(1.0, tk.END)
+
+            # save the code to a file
+            self.file_path = "temp.lol"
+            with open(self.file_path, 'w') as file:
+                file.write(code)
+
+            print(f"File Path: {self.file_path}")
+
+            # Initialize the lexical analyzer
+            interpreter = Interpreter()
+            
+            interpreter.read_file(self.file_path)  # Read the file
+            print("File read successfully")
+
+            tokens = interpreter.run_lexer()  # Run the lexical analyzer and get the tokens
+            print("Lexer executed successfully")
+
+            interpreter.run_parser()  # Run the syntax analyzer
+            print("Parser executed successfully")
+            self.console_text.config(state=tk.NORMAL)
+
+            symbol_table, to_print = interpreter.run_interpreter(self.input_callback)  # Run the semantic analyzer
+            print("Interpreter executed successfully")
+                
+            # Update List of Tokens
+            self.tokens_treeview.delete(*self.tokens_treeview.get_children())
+            for token, value in tokens:
+                self.tokens_treeview.insert("", "end", values=(token, value))
+
+            # Update Symbol Table
+            self.symbol_treeview.delete(*self.symbol_treeview.get_children())
+            for variable, value in symbol_table:
+                self.symbol_treeview.insert("", "end", values=(variable, value))
+
+            # TODO: integrate console and inputs
+            self.console_text.config(state=tk.NORMAL)
+            for each in to_print:
+                console_output = each
+                self.console_text.insert(tk.END, console_output)
+            self.console_text.config(state=tk.DISABLED)
+            
+        except Exception as e:
+            error_info = str(e) + "\n"
+            print(f"Error: {error_info}")
+            self.console_text.config(state=tk.NORMAL)
+            self.console_text.insert(tk.END, error_info)
+            self.console_text.config(state=tk.DISABLED)
 
 if __name__ == "__main__":
     root = tk.Tk()
-    root.geometry("1366x768")  # Set an initial size
+    root.geometry("1280x1000")  # Set an initial size
     app = GUI(root)
     root.mainloop()
+

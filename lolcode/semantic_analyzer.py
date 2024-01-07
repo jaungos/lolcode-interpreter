@@ -8,10 +8,10 @@ from Classes.lol_symbol_table import Lol_Symbol_Table
 from Classes.lol_symbol import SymbolEntity
 
 class SemanticAnalyzer:
-    def __init__(self, parse_tree):
+    def __init__(self, parse_tree, input_callback):
         self.parse_tree = parse_tree
         self.final_symbol_table = Lol_Symbol_Table()
-
+        self.input_callback = input_callback
         self.suppress_newline_print = False
 
     def run_semantic_analyzer(self):
@@ -340,10 +340,19 @@ class SemanticAnalyzer:
                 string_to_print = ''.join([string_to_print, str(self.evaluate_print_loop(print_information).symbolValue)])
 
         return SymbolEntity("YARN", string_to_print)
+    
+    # Function for getting print statements
+    def get_print_statements(self):
+        print_statements = []
+        for node in self.parse_tree.children:
+            if node.value == "<code-block>":
+                for statement in node.children:
+                    if statement.value == "<print>":
+                        print_statements.append(self.evaluate_print(statement))
+        return print_statements
 
     def evaluate_print(self, print_statement):
         string_symbol_entity = None
-
         for print_information in print_statement.children:
             if print_information.value == "<suppress-newline-delimiter>":
                 self.suppress_newline_print = True
@@ -357,11 +366,18 @@ class SemanticAnalyzer:
         if self.suppress_newline_print:
             print(f'{string_symbol_entity.symbolValue}', end='')
             self.suppress_newline_print = False
+            to_print = (string_symbol_entity.symbolValue) 
         else:
             print(f'{string_symbol_entity.symbolValue}')
+            to_print = (string_symbol_entity.symbolValue + '\n')
 
         # Update the IT
         self.final_symbol_table.update_symbol("IT", string_symbol_entity)
+        return to_print
+    
+    def trigger_callback(self):
+        user_input = self.input_callback()
+        return user_input
 
     def evaluate_input(self, input_statement):
         user_input = None
@@ -369,7 +385,7 @@ class SemanticAnalyzer:
         for input_information in input_statement.children:
             if input_information.value == "<input-operator>":
                 # TODO: adopt based on how to input in GUI
-                user_input = input() # Request for user input
+                user_input = self.trigger_callback()
             elif input_information.value == "<identifier>":
                 symbol_name = input_information.children[0].value
                 

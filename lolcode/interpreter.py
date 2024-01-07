@@ -5,6 +5,7 @@
 """
 
 # Import the needed modules
+from Classes.lol_symbol_table import Lol_Symbol_Table
 from lolcode.lexical_analyzer import LexicalAnalyzer
 from lolcode.syntax_analyzer import SyntaxAnalyzer
 from lolcode.semantic_analyzer import SemanticAnalyzer
@@ -14,7 +15,7 @@ class Interpreter:
         self.source_code = ""
         self.tokens = []
         self.parse_tree = []
-
+        
         self.lexer = None
         self.parser = None
         self.semantic_analyzer = None
@@ -79,7 +80,7 @@ class Interpreter:
 
         self.parser.print_parse_tree()
 
-    def run_interpreter(self):
+    def run_interpreter(self, input_callback):
         print("\n\nRunning the semantic analyzer...")
 
         # TODO: improve error prompting
@@ -87,9 +88,9 @@ class Interpreter:
             raise Exception("No parse tree to analyze.")
 
         # Instantiate the semantic analyzer
-        self.semantic_analyzer = SemanticAnalyzer(self.parse_tree)
-
+        self.semantic_analyzer = SemanticAnalyzer(self.parse_tree, input_callback) 
+        
         self.semantic_analyzer.run_semantic_analyzer()
-
-        return self.semantic_analyzer.print_symbol_table()
+        
+        return self.semantic_analyzer.print_symbol_table(), self.semantic_analyzer.get_print_statements()
 

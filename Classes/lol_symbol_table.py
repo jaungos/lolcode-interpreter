@@ -2,6 +2,8 @@
     This file is used to define the symbol table class for the compiler.
 """
 
+
+
 class Lol_Symbol_Table:
     def __init__(self):
         self.tokens = []
@@ -27,4 +29,3 @@ class Lol_Symbol_Table:
     
     def update_symbol(self, lexeme, symbol):
         self.symbols[lexeme] = symbol
-    
