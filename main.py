@@ -16,7 +16,7 @@ def main():
 
     interpreter.run_parser() # Run the syntax analyzer
 
-   #  interpreter.run_interpreter() # Run the semantic analyzer
+    interpreter.run_interpreter() # Run the semantic analyzer
 
 # Run the program
 if __name__ == "__main__":
