@@ -829,9 +829,18 @@ class SyntaxAnalyzer:
             # Error handling for missing YA RLY keyword
             raise Exception(f"Syntax Error: Line {self.current_token.line_number + 1}\n\t Expected if conditional statement start delimiter but got {self.current_token.token_type}")
 
-    # <switch> ::= WTF? <var-value> OMG <case> OMGWTF <code-block> OIC
-    #def switch_statement(self, node_parent):
-        #if self.check_if_token_matches_expected_token_types("opening_switch_statement_delimiter"):
+    # <switch> ::= WTF? OMG <value-literal> OMGWTF <code-block> OIC
+    def switch_statement(self, node_parent):
+        switch_statement_node = ParseTreeNode("<switch>", node_parent, self.current_token.line_number)
+        node_parent.add_child(switch_statement_node)
+        self.consume_current_token()
+
+        # get OMG
+        if self.check_if_token_matches_expected_token_types("switch_statement_delimiter"):
+            omg_loop_node = ParseTreeNode("<omg-loop>", switch_statement_node, self.current_token.line_number)
+            switch_statement_node.add_child(omg_loop_node)
+            self.addParseTreeNode(omg_loop_node)
+            self.consume_current_token()
 
     # <code-block> ::= <print> | <if-then> | <loop-opt> | <assignment> | <input> | <function-call> | <switch> | <casting> | <concat> | <expression> | <code-block>
     # TODO: dito kayo magadd ng other keywords na pwede sa codeblock
@@ -852,6 +861,10 @@ class SyntaxAnalyzer:
         # Check if the current token is the input keyword
         if self.check_if_token_matches_expected_token_types("input_keyword"):
             self.input_statement(node_parent)
+
+        # Check if the current token is the switch keyword
+        if self.check_if_token_matches_expected_token_types("opening_switch_statement_delimiter"):
+            self.switch_statement(node_parent)
 
         # Check if the current token is the type casting keyword
         if self.check_if_token_matches_expected_token_types("type_casting_delimiter"):
