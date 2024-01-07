@@ -717,40 +717,6 @@ class SyntaxAnalyzer:
                 raise Exception(f"Syntax Error: Line {self.current_token.line_number + 1}\n\t Expected else code block but got {self.current_token.token_type}")
 
             self.else_codeblock(node_parent)
-    
-    # code block for mebbe (allows mebbe and else only)
-    def mebbe_codeblock(self, node_parent):
-        # Check if the current token is the print keyword
-        if self.check_if_token_matches_expected_token_types("print_keyword"):
-            self.print_statement(node_parent)
-
-        # Check if the current token is the if keyword
-        if self.check_if_token_matches_expected_token_types("opening_conditional_statement_delimiter"):
-            self.if_then_statement(node_parent)
-
-        # Check if the current token is an identifier for the assignment keyword/typecasting assignment keyword
-        if self.check_if_token_matches_expected_token_types("identifiers"):
-            self.assignment_statement(node_parent)
-
-        # Check if the current token is the input keyword
-        if self.check_if_token_matches_expected_token_types("input_keyword"):
-            self.input_statement(node_parent)
-
-        # Check if the current token is the type casting keyword
-        if self.check_if_token_matches_expected_token_types("type_casting_delimiter"):
-            self.casting_statement(node_parent)
-
-        # Check if the current token is one of the keywords under expressions
-        if self.current_token.token_type in ["arithmetic_operator", "logical_operator", "comparison_operator", "concatenation_operator"]:
-            self.expression(node_parent)
-
-        # Check if the current token is still not the program end delimiter
-        if not self.check_if_token_matches_expected_token_types("program_end_delimiter"):
-            if self.current_token.token_type not in ["print_keyword", "identifiers", "opening_conditional_statement_delimiter","closing_conditional_statement_delimiter", "input_keyword", "type_casting_delimiter", "arithmetic_operator", "logical_operator", "comparison_operator", "concatenation_operator"]:
-                # Error handling for invalid code block
-                raise Exception(f"Syntax Error: Line {self.current_token.line_number + 1}\n\t Expected else code block but got {self.current_token.token_type}")
-
-            self.mebbe_codeblock(node_parent)
 
     # loop for mebbe
     # <mebbe-loop> :== <mebbe-loop> | <mebbe-loop> <mebbe-loop>
@@ -864,7 +830,8 @@ class SyntaxAnalyzer:
             raise Exception(f"Syntax Error: Line {self.current_token.line_number + 1}\n\t Expected if conditional statement start delimiter but got {self.current_token.token_type}")
 
     # <switch> ::= WTF? <var-value> OMG <case> OMGWTF <code-block> OIC
-
+    #def switch_statement(self, node_parent):
+        #if self.check_if_token_matches_expected_token_types("opening_switch_statement_delimiter"):
 
     # <code-block> ::= <print> | <if-then> | <loop-opt> | <assignment> | <input> | <function-call> | <switch> | <casting> | <concat> | <expression> | <code-block>
     # TODO: dito kayo magadd ng other keywords na pwede sa codeblock
