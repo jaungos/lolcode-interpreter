@@ -7,21 +7,34 @@ The program is a LOLCODE interpreter written in Python. It uses an object-orient
 
 ![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)
 ![LOLCODE](https://img.shields.io/badge/_-LOL-CC9900.svg?style=for-the-badge)
-
 </div>
 
 ## Installing Dependencies 
 * For Windows, it should be run in a cmd terminal
 ```bash
-py -m venv env
+py -m venv env # create a new python virtual environment
 env/Scripts/activate # Open a new cmd terminal in the same directory
+
+curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py # install pip
+python get-pip.py
+
+pip install tk
+pip install ttkthemes
+```
+
+* For linux, open a bash terminal and have sudo privileges
+```bash
+py -m venv env # create a new python virtual environment
+env/Scripts/activate # Open a new terminal in the same directory
+
+sudo apt install pip # install pip
 
 pip install tk
 pip install ttkthemes
 ```
 
 ## Running
-Open a terminal at the root folder and run the command: 
+Open a terminal at the sourcecode folder and run the command: 
 ### Linux
 ```bash
 python3 main.py
