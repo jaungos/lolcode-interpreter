@@ -545,7 +545,7 @@ class SemanticAnalyzer:
                     raise Exception(f"Error in line {loop_statement.line_number + 1}: Variable {identifier} has not been declared")
 
                 # Check if the variable is of type NUMBR
-                if self.final_symbol_table.get_symbol(identifier).symbolClassification != "NUMBR":
+                if self.type_cast_to_troof(self.final_symbol_table.get_symbol(identifier)).symbolClassification == "NUMBR":
                     raise Exception(f"Error in line {loop_statement.line_number + 1}: Variable {identifier} is not of type NUMBR")
 
 

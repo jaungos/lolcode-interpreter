@@ -905,7 +905,7 @@ class SyntaxAnalyzer:
             self.expression(node_parent)
 
         # Check if the current token is the break keyword for switch statements
-        if not self.check_if_token_matches_expected_token_types("loop_exit_keyword"):
+        if not self.check_if_token_matches_expected_token_types("loop_exit_keyword") and not self.check_if_token_matches_expected_token_types("switch_statement_break_delimiter"):
             self.loop_codeblock(node_parent)
     
     def loop_statement(self, node_parent):
