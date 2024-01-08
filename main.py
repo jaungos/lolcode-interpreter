@@ -63,9 +63,14 @@ class GUI:
         self.run_button.pack(pady=10)
 
         # Console
-        self.console_text = tk.Text(root, height=20, width=150, font=('Courier New', 12))
+        self.console_text = tk.Text(root, height=20, width=150, font=('Courier New', 12), bg=self.tables_frame.cget("background"))
         self.console_text.config(state=tk.DISABLED)
         self.console_text.pack()
+        
+        # Configure tags for prompt and error
+        self.console_text.tag_configure("prompt", foreground="green")
+        self.console_text.tag_configure("error", foreground="red")
+        self.console_text.tag_configure("content", foreground="black")
 
         # Configure row and column weights for resizing
         self.root.grid_rowconfigure(1, weight=1)
@@ -102,6 +107,8 @@ class GUI:
                 # Check if contents of temp.lol is the same as contents of the file opened
                 with open(self.file_path, 'r') as file:
                     code = file.read().strip()
+                if not self.new_file_path:
+                    self.new_file_path = "temp.lol"
                 with open(self.new_file_path, 'r') as file:
                     new_code = file.read().strip()
                     if code == new_code:
@@ -134,9 +141,6 @@ class GUI:
                     pass
                 else:
                     self.root.destroy()
-        # Delete the temp.lol file
-        os.remove(self.new_file_path)
-                    
 
     # Function to get input from the user
     def input_callback(self):
@@ -195,15 +199,20 @@ class GUI:
             self.console_text.config(state=tk.NORMAL)
             for each in to_print:
                 console_output = each
-                self.console_text.insert(tk.END, console_output)
+                self.console_text.insert(tk.END, console_output, "content")
             self.console_text.config(state=tk.DISABLED)
 
         # Error handling
         except Exception as e:
             error_info = str(e) + "\n"
             print(f"Error: {error_info}")
+            
+            # Display error in red color in the console
             self.console_text.config(state=tk.NORMAL)
-            self.console_text.insert(tk.END, error_info)
+            self.console_text.insert(tk.END, "lolcode-interpreter> ", "prompt")
+            self.console_text.insert(tk.END, error_info, "error")
+            self.console_text.tag_add("error", "insert linestart", "insert lineend+1c")
+            self.console_text.tag_configure("error", foreground="red")
             self.console_text.config(state=tk.DISABLED)
         
 # Run the GUI
@@ -212,3 +221,10 @@ if __name__ == "__main__":
     root.geometry("1380x1080")
     app = GUI(root)
     root.mainloop()
+    # Delete the temp.lol file
+    try:
+        os.remove("temp.lol")
+    except:
+        pass
+
+
