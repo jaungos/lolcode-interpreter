@@ -51,7 +51,7 @@ class SyntaxAnalyzer:
             return True
         else:
             return False
-            
+
     def consume_current_token(self):
         # Remove the token from the list and proceed to check the next token
         self.previous_token = self.symbol_table.pop(0) 
@@ -67,7 +67,7 @@ class SyntaxAnalyzer:
         node = ParseTreeNode(self.current_token.get_lexeme(), node_parent, self.current_token.line_number)
         node_parent.add_child(node)
         return node
-    
+
     def analyze(self):
         # Remove all comments and linebreak delimiters
         self.check_if_comments_are_valid()
