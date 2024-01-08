@@ -19,10 +19,6 @@ class Interpreter:
         self.parser = None
         self.semantic_analyzer = None
 
-    """
-        TODO:
-            - error messages and delete the print statements
-    """
     def isTokenListEmpty(self):
         return len(self.tokens) == 0
     
@@ -30,7 +26,6 @@ class Interpreter:
         self.source_code = file_path
 
     def checkIfFileExists(self):
-        # TODO: improve error prompting
         if self.source_code == "":
             raise Exception("No file path passed. Please pass a file path.")
         
@@ -55,8 +50,6 @@ class Interpreter:
         # Check for the validity of the file path
         self.checkIfFileExists()
 
-        print("Running the lexical analyzer...")
-
         # Instantiate the lexical analyzer
         self.lexer = LexicalAnalyzer(self.source_code)
 
@@ -67,9 +60,7 @@ class Interpreter:
         return self.lexer.print_tokens()
 
     def run_parser(self):
-        print("\n\nRunning the syntax analyzer...")
 
-        # TODO: improve error prompting
         if self.isTokenListEmpty():
             raise Exception("No tokens to parse.")
 
@@ -86,9 +77,6 @@ class Interpreter:
         self.parser.print_parse_tree()
 
     def run_interpreter(self, input_callback):
-        print("\n\nRunning the semantic analyzer...")
-
-        # TODO: improve error prompting
         if self.parse_tree is None:
             raise Exception("No parse tree to analyze.")
 

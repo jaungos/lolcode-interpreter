@@ -12,13 +12,6 @@ from Classes.lol_symbol_table import Lol_Symbol_Table
 from Classifiers.lexeme_types import classify_passed_lexeme
 from Classifiers.lexeme_identifiers import get_all_lexeme_regex_patterns
 
-"""
-    TODO:
-        - improve error printing for all errors
-            - should always include the type of error, line number, and the token that caused the error
-            - for lexical errors, print if the it the token is caused by an invalid lexeme or the paired delimiters are not found (e.g. OBTW-TLDR, string delimiters)
-"""
-
 class LexicalAnalyzer:
     def __init__(self, code_file_to_analyze):
         self.code_file_to_analyze = code_file_to_analyze
@@ -54,8 +47,6 @@ class LexicalAnalyzer:
                 lexeme_regex_identifiers = get_all_lexeme_regex_patterns()
 
                 while self.character_position < len(line):
-                    # print(f'Currently reading the character: {line[self.character_position]} in line {self.line_number}')
-
                     # Check if opening multiline comment delimiter token is found
                     match = lexicalanalyzer.match(lexeme_regex_identifiers['OBTW'], line[self.character_position:])
                     if match:
@@ -138,7 +129,6 @@ class LexicalAnalyzer:
 
                     # Check for unpaired YARN delimiter tokens
                     if len(line) > self.character_position and line[self.character_position] != " " and lexicalanalyzer.match("\"", line[self.character_position:]):
-                        # TODO: improve error prompting
                         raise Exception(f'ERROR: Unpaired YARN delimiter token {line[self.character_position]} in line {self.line_number + 1}')
 
                     self.read_one_whitespace()
@@ -155,9 +145,7 @@ class LexicalAnalyzer:
 
     def print_tokens(self):
         token_tuples = []
-        print("Tokens:")
         for token in self.symbol_table.get_tokens():
-            print(f'\t{token.get_token_type()}: {token.get_lexeme()} in line {token.line_number + 1}')
             # removes linebreak_delimiter tokens from the list of tokens to be returned
             if token.get_token_type() != "linebreak_delimiter":
                 token_tuples.append((token.get_lexeme(), token.get_token_type()))

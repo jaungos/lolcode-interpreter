@@ -332,7 +332,6 @@ class SemanticAnalyzer:
             elif variable_declaration_node.value == "<var>":
                 self.evaluate_var(variable_declaration_node) # Pass the <var> node
             else:
-                # TODO: improve error prompting
                 raise Exception(f"Error in line {variable_declaration_node.line_number + 1}: Expected variable but got {variable_declaration_node.value}\n")
 
     def evaluate_print_loop(self, print_loop):
