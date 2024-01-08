@@ -7,7 +7,7 @@ The program is a LOLCODE interpreter written in Python. It uses an object-orient
 
 ![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)
 ![LOLCODE](https://img.shields.io/badge/_-LOL-CC9900.svg?style=for-the-badge)
-
+![PIP](https://pypi.org/static/images/logo-small.2a411bc6.svg)
 </div>
 
 ## Installing Dependencies 
@@ -15,6 +15,14 @@ The program is a LOLCODE interpreter written in Python. It uses an object-orient
 ```bash
 py -m venv env
 env/Scripts/activate # Open a new cmd terminal in the same directory
+
+pip install tk
+pip install ttkthemes
+```
+
+* For linux, open a bash terminal and have sudo privileges
+```bash
+sudo apt install pip
 
 pip install tk
 pip install ttkthemes
