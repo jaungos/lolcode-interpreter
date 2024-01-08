@@ -21,7 +21,7 @@ pip install ttkthemes
 ```
 
 ## Running
-Open a terminal at the root folder and run the command: 
+Open a terminal at the sourcecode folder and run the command: 
 ### Linux
 ```bash
 python3 main.py
