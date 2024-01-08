@@ -20,10 +20,8 @@ class SemanticAnalyzer:
 
     def print_symbol_table(self):
         self.final_symbol_table.get_symbols()
-        print("Symbol Table:")
         symbol_table = []
         for symbol in self.final_symbol_table.symbols:
-            print(f'\t{symbol}: {self.final_symbol_table.symbols[symbol].symbolClassification} - {self.final_symbol_table.symbols[symbol].symbolValue}')
             symbol_table.append((symbol, self.final_symbol_table.symbols[symbol].symbolValue))
         return symbol_table
 
@@ -71,7 +69,6 @@ class SemanticAnalyzer:
 
         # Evaluate the parse tree
         for node in self.parse_tree.children:
-            # TODO: add function before HAI and after KTHXBYE and make it the if for this control flow statement
             if node.value == "<program-start-delimiter>":
                 if node.children[0].value == "HAI" and len(node.children) == 1:
                     continue

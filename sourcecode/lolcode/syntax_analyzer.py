@@ -1,18 +1,7 @@
 """
     This file is used to define the syntax analyzer for the lolcode language.
-    TODO: add brief description of what a parser does in this lolcode compiler
 """
 
-"""
-    TODO:s
-        - improve error printing for all errors
-            - should always include the type of error, line number, and the token that caused the error
-            - for syntax errors, should also include the expected token type and the actual token type
-        - improve printing when parsing is finished due to no more tokens left
-        - double check and fix naming conventions
-"""
-
-# TODO: Remove after milestone presentation
 from Classes.lol_node import ParseTreeNode
 
 class SyntaxAnalyzer:
@@ -58,7 +47,6 @@ class SyntaxAnalyzer:
 
         # Update the current token if there are still tokens left
         if self.check_if_symbol_table_is_empty() == True:
-            print("Finished parsing...")
             return
         else:
             self.current_token = self.symbol_table[0]
@@ -76,7 +64,6 @@ class SyntaxAnalyzer:
 
         # Update the current token if there are still tokens left
         if self.check_if_symbol_table_is_empty():
-            # TODO: Improve the error printing for empty file
             raise Exception(f"Syntax Error: Line {self.current_token.line_number + 1}\n\t Empty file")
         else:
             self.current_token = self.symbol_table[0]
@@ -89,7 +76,6 @@ class SyntaxAnalyzer:
         self.parse_tree = ParseTreeNode("<program>", None, None)
         self.program() # Start the parsing from the <program> grammar rule
 
-    # TODO: remove. ONLY FOR ERROR CHECKING
     def print_parse_tree(self):
         self.parse_tree.print_tree(0)
     
@@ -681,8 +667,6 @@ class SyntaxAnalyzer:
         
     # Specialized codeblock for control flow statements
     def flow_control_codeblock(self, node_parent):
-        print(f'current token: {self.current_token.token_type} at line {self.current_token.line_number + 1}')
-
         # Check if the current token is the print keyword
         if self.check_if_token_matches_expected_token_types("print_keyword"):
             self.print_statement(node_parent)
@@ -865,8 +849,6 @@ class SyntaxAnalyzer:
                     self.consume_current_token()
 
     def loop_codeblock(self, node_parent):
-        print(f'current token: {self.current_token.token_type} at line {self.current_token.line_number + 1}')
-
         # Check if the current token is the print keyword
         if self.check_if_token_matches_expected_token_types("print_keyword"):
             self.print_statement(node_parent)
@@ -1033,7 +1015,6 @@ class SyntaxAnalyzer:
             raise Exception(f"Syntax Error: Line {self.current_token.line_number + 1}\n\t Expected switch statement end delimiter but got {self.current_token.token_type}")
 
     # <code-block> ::= <print> | <if-then> | <loop-opt> | <assignment> | <input> | <function-call> | <switch> | <casting> | <concat> | <expression> | <code-block>
-    # TODO: dito kayo magadd ng other keywords na pwede sa codeblock
     def codeblock(self, node_parent):
         # Check if the current token is the print keyword
         if self.check_if_token_matches_expected_token_types("print_keyword"):
@@ -1074,19 +1055,14 @@ class SyntaxAnalyzer:
 
         # Check if the current token is still not the program end delimiter
         if not self.check_if_token_matches_expected_token_types("program_end_delimiter"):
-            # TODO: add the other keywords
             if self.current_token.token_type not in ["loop_keyword","opening_switch_statement_delimiter", "print_keyword", "opening_conditional_statement_delimiter", "identifiers", "numbr_literal", "numbar_literal", "string_delimiter", "troof_literal", "input_keyword", "type_casting_delimiter", "arithmetic_operator", "logical_operator", "comparison_operator", "concatenation_operator"]:
                 # Error handling for invalid code block
-                # TODO: improve error handling for invalid code block ---- change error message
                 raise Exception(f"Syntax Error: Line {self.current_token.line_number + 1}\n\t Expected code block but got {self.current_token.token_type}")
 
             self.codeblock(node_parent)
 
     # <program> ::= <function> HAI <variable-declaration> <code-block> KTHXBYE <function>
     def program(self):
-        # TODO: Check if the current token is the function declaration start delimiter
-        # while self.current_token.token_type == "function_declaration_start_delimiter":
-
         # Check if the current token is the HAI keyword
         if self.check_if_token_matches_expected_token_types("program_start_delimiter"):
             start_delimiter_node = ParseTreeNode("<program-start-delimiter>", self.parse_tree, self.current_token.line_number)
@@ -1120,10 +1096,6 @@ class SyntaxAnalyzer:
         else:
             # Error handling for missing KTHXBYE keyword
             raise Exception(f"Syntax Error: Line {self.current_token.line_number + 1}\n\t Expected program end delimiter but got {self.current_token.token_type}")
-
-        # TODO: Check if the current token is the function declaration start delimiter
-        # while self.current_token.token_type == "function_declaration_start_delimiter":
-
     # ===================== Functions for Removing Linebreak Delimiters =====================
     def remove_linebreak_delimiters(self):
         symbol_table_without_linebreaks = []
