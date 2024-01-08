@@ -20,11 +20,13 @@ HAI
             VISIBLE "Enter second number: "
             GIMMEH num2
             VISIBLE SUM OF num1 AN num2
-        MEBBE BOTH SAEM choice AN "0"
-            VISIBLE "Buhbye!"
-        MEBBE BOTH SAEM choice AN "5"
-            VISIBLE "Bye!"
         NO WAI
-            BOTH SAEM choice AN "2"
+            BOTH SAEM choice AN "0"
+            O RLY?
+                YA RLY
+                    VISIBLE "Bye!"
+                NO WAI
+                    VISIBLE "Invalid choice!"
+            OIC
     OIC
 KTHXBYE

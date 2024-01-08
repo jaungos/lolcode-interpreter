@@ -1,6 +1,6 @@
 """
-    This file is used to define and implement the syntax analyzer of the interpreter for the LOLCode language.
-    Analyze the syntax of the passed LOLCode file and check if it is valid by creating a matching parsee tree for it.
+    This file is used to define the syntax analyzer for the lolcode language.
+    TODO: add brief description of what a parser does in this lolcode compiler
 """
 
 """
@@ -70,22 +70,20 @@ class SyntaxAnalyzer:
     
     def analyze(self):
         # Remove all comments and linebreak delimiters
-        self.check_if_comments_are_valid()    
+        self.check_if_comments_are_valid()
         self.remove_all_comments()
         self.remove_linebreak_delimiters()
 
-        # Update the current token if there are still tokens left 
+        # Update the current token if there are still tokens left
         if self.check_if_symbol_table_is_empty():
             # TODO: Improve the error printing for empty file
-            print("File is empty...")
-            return
+            raise Exception(f"Syntax Error: Line {self.current_token.line_number + 1}\n\t Empty file")
         else:
             self.current_token = self.symbol_table[0]
 
         # Check if the program delimiters are present
         if not self.check_if_program_delimiters_are_present():
-            # TODO: Improve the error printing for missing program delimiters
-            raise Exception("Syntax Error: Missing program delimiters")
+            raise Exception(f"Syntax Error: Line {self.current_token.line_number + 1}\n\t Missing program start and/or end delimiters")
 
         # Create the root node of the parse tree
         self.parse_tree = ParseTreeNode("<program>", None, None)
@@ -443,7 +441,7 @@ class SyntaxAnalyzer:
         else:
             # Error handling for invalid comparison operator
             raise Exception(f"Syntax Error: Line {self.current_token.line_number + 1}\n\t Expected comparison operator but got {self.current_token.token_type}")
-        
+
         if self.current_number_of_nested_arithmetic_operand_operations == 0 and self.current_number_of_nested_boolean_operand_operations == 0 and self.current_number_of_nested_comparison_operand_operations == 0 and self.check_if_token_matches_expected_token_types("operand_separator_keyword"):
             raise Exception(f"Syntax Error: Line {self.current_token.line_number + 1}\n\t Comparison operations are only binary")
 
@@ -494,6 +492,10 @@ class SyntaxAnalyzer:
             # Error handling for invalid expression
             raise Exception(f"Syntax Error: Line {self.current_token.line_number + 1}\n\t Expected expression but got {self.current_token.token_type}")
 
+        # Check if the current token is an opening conditional statement delimiter
+        if self.check_if_token_matches_expected_token_types("opening_conditional_statement_delimiter"):
+            self.if_then_statement(node_parent) # Add the if then statement node as a child of the conditional statement node
+
     # <var-value> ::= literal | varident | <expression>
     def var_value(self, node_parent):
         var_value_node = ParseTreeNode("<var-value>", node_parent, self.current_token.line_number)
@@ -525,9 +527,9 @@ class SyntaxAnalyzer:
     # <varident> ::= identifier | identifier ITZ <var-value>
     def varident(self, node_parent):
         if self.check_if_token_matches_expected_token_types("identifiers"):
-            identifer_node = ParseTreeNode("<identifier>", node_parent, self.current_token.line_number)
-            node_parent.add_child(identifer_node)
-            self.addParseTreeNode(identifer_node)
+            identifier_node = ParseTreeNode("<identifier>", node_parent, self.current_token.line_number)
+            node_parent.add_child(identifier_node)
+            self.addParseTreeNode(identifier_node)
             self.consume_current_token()
 
             if self.check_if_token_matches_expected_token_types("variable_initialization_keyword"):
@@ -642,9 +644,6 @@ class SyntaxAnalyzer:
             self.consume_current_token()
 
             self.valid_type(type_casting_assignment_node)
-        else:
-            # Error handling for missing assignment operator
-            raise Exception(f"Syntax Error: Line {self.current_token.line_number + 1}\n\t Expected assignment operator or type casting assignment operator but got {self.current_token.token_type}")
 
     # <input> ::= GIMMEH <varident>
     def input_statement(self, node_parent):
@@ -679,6 +678,359 @@ class SyntaxAnalyzer:
             self.valid_type(casting_node)
         else:
             self.valid_type(casting_node)
+        
+    # Specialized codeblock for control flow statements
+    def flow_control_codeblock(self, node_parent):
+        print(f'current token: {self.current_token.token_type} at line {self.current_token.line_number + 1}')
+
+        # Check if the current token is the print keyword
+        if self.check_if_token_matches_expected_token_types("print_keyword"):
+            self.print_statement(node_parent)
+
+        # FOR IF-ELSE STATEMENTS
+        # Check if the current token is the if keyword
+        if self.check_if_token_matches_expected_token_types("opening_conditional_statement_delimiter"):
+            self.if_then_statement(node_parent)
+
+        # Check if the current token is the loop keyword
+        if self.check_if_token_matches_expected_token_types("loop_keyword"):
+            self.loop_statement(node_parent)
+
+        # Check if the current token is an identifier for the assignment keyword/typecasting assignment keyword
+        if self.check_if_token_matches_expected_token_types("identifiers"):
+            self.assignment_statement(node_parent)
+
+        # Check if the current token is a literal value
+        if self.current_token.token_type in ["numbr_literal", "numbar_literal", "string_delimiter", "troof_literal"]:
+            self.var_value(node_parent)
+
+        # Check if the current token is the input keyword
+        if self.check_if_token_matches_expected_token_types("input_keyword"):
+            self.input_statement(node_parent)
+
+        # Check if the current token is the switch keyword
+        if self.check_if_token_matches_expected_token_types("opening_switch_statement_delimiter"):
+            self.switch_statement(node_parent)
+
+        # Check if the current token is the type casting keyword
+        if self.check_if_token_matches_expected_token_types("type_casting_delimiter"):
+            self.casting_statement(node_parent)
+
+        # Check if the current token is one of the keywords under expressions
+        if self.current_token.token_type in ["arithmetic_operator", "logical_operator", "comparison_operator", "concatenation_operator"]:
+            self.expression(node_parent)
+
+        # Check if the current token is the break keyword for switch statements
+        if self.check_if_token_matches_expected_token_types("switch_statement_break_delimiter"):
+            return # Return to the switch statement function
+
+        # Check if the current token is still not a switch statement delimiter and is still not a conditional statement delimiter
+        if not self.check_if_token_matches_expected_token_types("switch_statement_delimiter") and not self.check_if_token_matches_expected_token_types("alternative_switch_statement_delimiter") and not self.check_if_token_matches_expected_token_types("closing_conditional_statement_delimiter") \
+            and not self.check_if_token_matches_expected_token_types("alternative_conditional_statement_delimiter") and not self.check_if_token_matches_expected_token_types("else_conditional_statement_delimiter") and not self.check_if_token_matches_expected_token_types("closing_conditional_statement_delimiter"):
+            self.flow_control_codeblock(node_parent)
+
+    # <mebbe-loop> :== <mebbe-loop> | <mebbe-loop> <mebbe-loop>
+    def mebbe_loop(self, node_parent):
+        mebbe_loop_node = ParseTreeNode("<mebbe-loop>", node_parent, self.current_token.line_number)
+        node_parent.add_child(mebbe_loop_node)
+        
+        mebbe_statement_delimiter = ParseTreeNode("<mebbe-statement-delimiter>", mebbe_loop_node, self.current_token.line_number)
+        mebbe_loop_node.add_child(mebbe_statement_delimiter)
+        self.addParseTreeNode(mebbe_statement_delimiter)
+        self.consume_current_token()
+    
+        expression_statement_node = ParseTreeNode("<expression-statement>", mebbe_loop_node, self.current_token.line_number)
+        mebbe_loop_node.add_child(expression_statement_node)
+
+        self.expression(expression_statement_node)    
+
+        codeblock_statement_node = ParseTreeNode("<code-block-statement>", mebbe_loop_node, self.current_token.line_number)
+        mebbe_loop_node.add_child(codeblock_statement_node)
+
+        self.flow_control_codeblock(codeblock_statement_node)
+
+        # Check if the current token is another MEBBE
+        if self.check_if_token_matches_expected_token_types("alternative_conditional_statement_delimiter"):
+            self.mebbe_loop(node_parent)
+
+    # <if_then> ::= <conditional-statement> O RLY? YA RLY <if-else-code-block> NO WAI <else-code-block> OIC
+    def if_then_statement(self, node_parent):
+        if_then_statement_node = ParseTreeNode("<conditional-statement>", node_parent, self.current_token.line_number)
+        node_parent.add_child(if_then_statement_node)
+
+        conditional_statement_start_delimiter_node = ParseTreeNode("<conditional-statement-start-delimiter>", if_then_statement_node, self.current_token.line_number)
+        if_then_statement_node.add_child(conditional_statement_start_delimiter_node)
+        self.addParseTreeNode(conditional_statement_start_delimiter_node)
+        self.consume_current_token()
+
+        # Get the YA RLY keyword
+        if self.check_if_token_matches_expected_token_types("if_conditional_statement_delimiter"):
+            if_statement_node = ParseTreeNode("<if-statement>", if_then_statement_node, self.current_token.line_number)
+            if_then_statement_node.add_child(if_statement_node)
+
+            if_conditional_statement_delimiter = ParseTreeNode("<if-delimiter>", if_statement_node, self.current_token.line_number)
+            if_statement_node.add_child(if_conditional_statement_delimiter)
+            self.addParseTreeNode(if_conditional_statement_delimiter)
+            self.consume_current_token()
+
+            codeblock_statement_node = ParseTreeNode("<code-block-statement>", if_statement_node, self.current_token.line_number)
+            if_statement_node.add_child(codeblock_statement_node)
+
+            self.flow_control_codeblock(codeblock_statement_node)
+
+            # Check if the current token is MEBBE
+            if self.check_if_token_matches_expected_token_types("alternative_conditional_statement_delimiter"):
+                self.mebbe_loop(if_then_statement_node)
+
+            # Check if the current token is the NO WAI keyword
+            if self.check_if_token_matches_expected_token_types("else_conditional_statement_delimiter"):
+                else_statement_node = ParseTreeNode("<else-statement>", if_then_statement_node, self.current_token.line_number)
+                if_then_statement_node.add_child(else_statement_node)
+                
+                else_conditional_statement_delimiter = ParseTreeNode("<else-delimiter>", else_statement_node, self.current_token.line_number)
+                else_statement_node.add_child(else_conditional_statement_delimiter)
+                self.addParseTreeNode(else_conditional_statement_delimiter)
+                self.consume_current_token()
+
+                # add NO WAI's code block
+                codeblock_statement_node = ParseTreeNode("<code-block-statement>", else_statement_node, self.current_token.line_number)
+                else_statement_node.add_child(codeblock_statement_node)
+
+                self.flow_control_codeblock(codeblock_statement_node)
+            
+            # Check if the current token is the OIC keyword
+            if self.check_if_token_matches_expected_token_types("closing_conditional_statement_delimiter"):
+                conditional_statement_end_delimiter = ParseTreeNode("<closing-conditional-statement-delimiter>", if_then_statement_node, self.current_token.line_number)
+                if_then_statement_node.add_child(conditional_statement_end_delimiter)
+                self.addParseTreeNode(conditional_statement_end_delimiter)
+                self.consume_current_token()
+            else:
+                # Error handling for missing OIC keyword
+                raise Exception(f"Syntax Error: Line {self.current_token.line_number + 1}\n\t Expected conditional statement end delimiter but got {self.current_token.token_type}")
+        else:
+            # Error handling for missing YA RLY keyword
+            raise Exception(f"Syntax Error: Line {self.current_token.line_number + 1}\n\t Expected if conditional statement start delimiter but got {self.current_token.token_type}")
+
+    # <omg-loop> :== OMG <literal-value> <code-block> <omg-loop> | OMG <literal-value> <code-block> OMGWTF <code-block>
+    def omg_loop(self, node_parent):
+        omg_loop_node = ParseTreeNode("<omg-loop>", node_parent, self.current_token.line_number)
+        node_parent.add_child(omg_loop_node)
+
+        if self.check_if_token_matches_expected_token_types("switch_statement_delimiter"):
+            switch_statement_delimiter_node = ParseTreeNode("<switch-statement-delimiter>", omg_loop_node, self.current_token.line_number)
+            omg_loop_node.add_child(switch_statement_delimiter_node)
+            self.addParseTreeNode(switch_statement_delimiter_node)
+            self.consume_current_token()
+
+            if self.current_token.token_type in ["numbr_literal", "numbar_literal", "string_delimiter", "troof_literal"]:
+                literal_value_node = ParseTreeNode("<literal-value>", omg_loop_node, self.current_token.line_number)
+                omg_loop_node.add_child(literal_value_node)
+
+                self.literal_value(literal_value_node) # Add the literal value node as a child of the var value node
+            else:
+                # Error handling for invalid var value
+                raise Exception(f"Syntax Error: Line {self.current_token.line_number + 1}\n\t Expected literal but got {self.current_token.token_type}")
+
+            codeblock_statement_node = ParseTreeNode("<code-block-statement>", omg_loop_node, self.current_token.line_number)
+            omg_loop_node.add_child(codeblock_statement_node)
+
+            self.flow_control_codeblock(codeblock_statement_node)
+
+            if self.check_if_token_matches_expected_token_types("switch_statement_break_delimiter"):
+                switch_statement_break_delimiter_node = ParseTreeNode("<switch-statement-break-delimiter>", omg_loop_node, self.current_token.line_number)
+                omg_loop_node.add_child(switch_statement_break_delimiter_node)
+                self.addParseTreeNode(switch_statement_break_delimiter_node)
+                self.consume_current_token()
+
+            if self.check_if_token_matches_expected_token_types("switch_statement_delimiter"):
+                self.omg_loop(node_parent)
+            elif self.check_if_token_matches_expected_token_types("alternative_switch_statement_delimiter"):
+                default_loop_node = ParseTreeNode("<default-loop>", node_parent, self.current_token.line_number)
+                node_parent.add_child(default_loop_node)
+
+                alternative_switch_statement_delimiter_node = ParseTreeNode("<alternative-switch-statement-delimiter>", default_loop_node, self.current_token.line_number)
+                default_loop_node.add_child(alternative_switch_statement_delimiter_node)
+                self.addParseTreeNode(alternative_switch_statement_delimiter_node)
+                self.consume_current_token()
+                
+                codeblock_statement_node = ParseTreeNode("<code-block-statement>", default_loop_node, self.current_token.line_number)
+                default_loop_node.add_child(codeblock_statement_node)
+
+                self.flow_control_codeblock(codeblock_statement_node)
+
+                if self.check_if_token_matches_expected_token_types("switch_statement_break_delimiter"):
+                    switch_statement_break_delimiter_node = ParseTreeNode("<switch-statement-break-delimiter>", default_loop_node, self.current_token.line_number)
+                    default_loop_node.add_child(switch_statement_break_delimiter_node)
+                    self.addParseTreeNode(switch_statement_break_delimiter_node)
+                    self.consume_current_token()
+
+    def loop_codeblock(self, node_parent):
+        print(f'current token: {self.current_token.token_type} at line {self.current_token.line_number + 1}')
+
+        # Check if the current token is the print keyword
+        if self.check_if_token_matches_expected_token_types("print_keyword"):
+            self.print_statement(node_parent)
+
+        # FOR IF-ELSE STATEMENTS
+        # Check if the current token is the if keyword
+        if self.check_if_token_matches_expected_token_types("opening_conditional_statement_delimiter"):
+            self.if_then_statement(node_parent)
+
+        # Check if the current token is the loop keyword
+        if self.check_if_token_matches_expected_token_types("loop_keyword"):
+            self.loop_statement(node_parent)
+
+        # Check if the current token is an identifier for the assignment keyword/typecasting assignment keyword
+        if self.check_if_token_matches_expected_token_types("identifiers"):
+            self.assignment_statement(node_parent)
+
+        # Check if the current token is a literal value
+        if self.current_token.token_type in ["numbr_literal", "numbar_literal", "string_delimiter", "troof_literal"]:
+            self.var_value(node_parent)
+
+        # Check if the current token is the input keyword
+        if self.check_if_token_matches_expected_token_types("input_keyword"):
+            self.input_statement(node_parent)
+
+        # Check if the current token is the switch keyword
+        if self.check_if_token_matches_expected_token_types("opening_switch_statement_delimiter"):
+            self.switch_statement(node_parent)
+
+        # Check if the current token is the type casting keyword
+        if self.check_if_token_matches_expected_token_types("type_casting_delimiter"):
+            self.casting_statement(node_parent)
+
+        # Check if the current token is one of the keywords under expressions
+        if self.current_token.token_type in ["arithmetic_operator", "logical_operator", "comparison_operator", "concatenation_operator"]:
+            self.expression(node_parent)
+
+        # Check if the current token is the break keyword for switch statements
+        if not self.check_if_token_matches_expected_token_types("loop_exit_keyword") and not self.check_if_token_matches_expected_token_types("switch_statement_break_delimiter"):
+            self.loop_codeblock(node_parent)
+    
+    def loop_statement(self, node_parent):
+        loop_statement_node = ParseTreeNode("<loop-statement>", node_parent, self.current_token.line_number)
+        node_parent.add_child(loop_statement_node)
+
+        loop_delimiter_node = ParseTreeNode("<loop-opening-delimiter>", loop_statement_node, self.current_token.line_number)
+        loop_statement_node.add_child(loop_delimiter_node)
+        self.addParseTreeNode(loop_delimiter_node)
+        self.consume_current_token()
+
+        # Get label
+        if self.check_if_token_matches_expected_token_types("identifiers"):
+            label_node = ParseTreeNode("<loop-label>", loop_statement_node, self.current_token.line_number)
+            loop_statement_node.add_child(label_node)   # add the label node as a child of the parse tree node
+            self.varident(label_node)   # add the varident node as a child of the label node
+        else:
+            # Error handling for missing label
+            raise Exception(f"Syntax Error: Line {self.current_token.line_number + 1}\n\t Expected label but got {self.current_token.token_type}")
+
+        # Get the loop operator
+        if self.check_if_token_matches_expected_token_types("loop_operator"):
+            loop_operator_node = ParseTreeNode("<loop-operation>", loop_statement_node, self.current_token.line_number)
+            loop_statement_node.add_child(loop_operator_node)
+            self.addParseTreeNode(loop_operator_node)
+            self.consume_current_token()
+        else:
+            # Error handling for invalid loop operator
+            raise Exception(f"Syntax Error: Line {self.current_token.line_number + 1}\n\t Expected loop operator but got {self.current_token.token_type}")
+
+        # Get YR
+        if self.check_if_token_matches_expected_token_types("yr_keyword"):
+            yr_operator_node = ParseTreeNode("<loop-yr-operator>", loop_statement_node, self.current_token.line_number)
+            loop_statement_node.add_child(yr_operator_node)
+            self.addParseTreeNode(yr_operator_node)
+            self.consume_current_token()
+        else:
+            # Error handling for invalid YR operator
+            raise Exception(f"Syntax Error: Line {self.current_token.line_number + 1}\n\t Expected YR operator but got {self.current_token.token_type}")
+
+        # Get the variable
+        if self.check_if_token_matches_expected_token_types("identifiers"):
+            variable_value_node = ParseTreeNode("<variable-name>", loop_statement_node, self.current_token.line_number)
+            loop_statement_node.add_child(variable_value_node)
+            
+            self.varident(variable_value_node)
+
+        else:
+            # Error handling for invalid variable
+            raise Exception(f"Syntax Error: Line {self.current_token.line_number + 1}\n\t Expected variable but got {self.current_token.token_type}")
+
+        # Get condition loop keyword
+        if self.check_if_token_matches_expected_token_types("condition_loop_keyword"):
+            condition_loop_keyword = ParseTreeNode("<loop-condition-keyword>", loop_statement_node, self.current_token.line_number)
+            loop_statement_node.add_child(condition_loop_keyword)
+            self.addParseTreeNode(condition_loop_keyword)
+            self.consume_current_token()
+        else:
+            # Error handling for invalid loop keyword
+            raise Exception(f"Syntax Error: Line {self.current_token.line_number + 1}\n\t condition loop keyword but got {self.current_token.token_type}")
+
+        # Get the expression
+        if self.current_token.token_type in ["arithmetic_operator", "logical_operator", "comparison_operator", "concatenation_operator"]:
+            loop_expression_node = ParseTreeNode("<loop-condition-expression>", loop_statement_node, self.current_token.line_number)
+            loop_statement_node.add_child(loop_expression_node)
+            
+            self.expression(loop_expression_node)
+
+        else:
+            # Error handling for invalid loop expression
+            raise Exception(f"Syntax Error: Line {self.current_token.line_number + 1}\n\t Expected loop expression but got {self.current_token.token_type}")
+
+        # Get the code block
+        codeblock_statement_node = ParseTreeNode("<code-block-statement>", loop_statement_node, self.current_token.line_number)
+        loop_statement_node.add_child(codeblock_statement_node)
+
+        self.loop_codeblock(codeblock_statement_node)
+        
+        # Check for optional GTFO keyword
+        if self.check_if_token_matches_expected_token_types("switch_statement_break_delimiter"):
+            loop_statement_break_delimiter_node = ParseTreeNode("<loop-statement-break-delimiter>", loop_statement_node, self.current_token.line_number)
+            loop_statement_node.add_child(loop_statement_break_delimiter_node)
+            self.addParseTreeNode(loop_statement_break_delimiter_node)
+            self.consume_current_token()
+
+        # Get IM OUTTA YR
+        if self.check_if_token_matches_expected_token_types("loop_exit_keyword"):
+            loop_exit_node = ParseTreeNode("<loop-closing-delimiter>", loop_statement_node, self.current_token.line_number)
+            loop_statement_node.add_child(loop_exit_node)
+            self.addParseTreeNode(loop_exit_node)
+            self.consume_current_token()
+        else:
+            # Error handling for invalid loop exit keyword
+            raise Exception(f"Syntax Error: Line {self.current_token.line_number + 1}\n\t Expected loop exit keyword but got {self.current_token.token_type}")
+        
+        # Get the loop label
+        if self.check_if_token_matches_expected_token_types("identifiers"):
+            loop_label_node = ParseTreeNode("<loop-label>", loop_statement_node, self.current_token.line_number)
+            loop_statement_node.add_child(loop_label_node)
+
+            self.varident(loop_label_node)
+        else:
+            # Error handling for invalid loop label
+            raise Exception(f"Syntax Error: Line {self.current_token.line_number + 1}\n\t Expected loop label but got {self.current_token.token_type}")
+
+    # <switch> ::= WTF? <omg-loop> OIC
+    def switch_statement(self, node_parent):
+        switch_statement_node = ParseTreeNode("<switch>", node_parent, self.current_token.line_number)
+        node_parent.add_child(switch_statement_node)
+
+        switch_delimiter_node = ParseTreeNode("<switch-delimiter>", switch_statement_node, self.current_token.line_number)
+        switch_statement_node.add_child(switch_delimiter_node)
+        self.addParseTreeNode(switch_delimiter_node)
+        self.consume_current_token()
+
+        self.omg_loop(switch_delimiter_node)
+
+        # Check if the current token is the OIC keyword
+        if self.check_if_token_matches_expected_token_types("closing_conditional_statement_delimiter"):
+            conditional_statement_end_delimiter = ParseTreeNode("<closing-conditional-statement-delimiter>", switch_statement_node, self.current_token.line_number)
+            switch_statement_node.add_child(conditional_statement_end_delimiter)
+            self.addParseTreeNode(conditional_statement_end_delimiter)
+            self.consume_current_token()
+        else:
+            raise Exception(f"Syntax Error: Line {self.current_token.line_number + 1}\n\t Expected switch statement end delimiter but got {self.current_token.token_type}")
 
     # <code-block> ::= <print> | <if-then> | <loop-opt> | <assignment> | <input> | <function-call> | <switch> | <casting> | <concat> | <expression> | <code-block>
     # TODO: dito kayo magadd ng other keywords na pwede sa codeblock
@@ -687,13 +1039,30 @@ class SyntaxAnalyzer:
         if self.check_if_token_matches_expected_token_types("print_keyword"):
             self.print_statement(node_parent)
 
+        # FOR IF-ELSE STATEMENTS
+        # Check if the current token is the if keyword
+        if self.check_if_token_matches_expected_token_types("opening_conditional_statement_delimiter"):
+            self.if_then_statement(node_parent)
+
+        # Check if the current token is the loop keyword
+        if self.check_if_token_matches_expected_token_types("loop_keyword"):
+            self.loop_statement(node_parent)
+
         # Check if the current token is an identifier for the assignment keyword/typecasting assignment keyword
         if self.check_if_token_matches_expected_token_types("identifiers"):
             self.assignment_statement(node_parent)
 
+        # Check if the current token is a literal value
+        if self.current_token.token_type in ["numbr_literal", "numbar_literal", "string_delimiter", "troof_literal"]:
+            self.var_value(node_parent)
+
         # Check if the current token is the input keyword
         if self.check_if_token_matches_expected_token_types("input_keyword"):
             self.input_statement(node_parent)
+
+        # Check if the current token is the switch keyword
+        if self.check_if_token_matches_expected_token_types("opening_switch_statement_delimiter"):
+            self.switch_statement(node_parent)
 
         # Check if the current token is the type casting keyword
         if self.check_if_token_matches_expected_token_types("type_casting_delimiter"):
@@ -706,7 +1075,7 @@ class SyntaxAnalyzer:
         # Check if the current token is still not the program end delimiter
         if not self.check_if_token_matches_expected_token_types("program_end_delimiter"):
             # TODO: add the other keywords
-            if self.current_token.token_type not in ["print_keyword", "identifiers", "input_keyword", "type_casting_delimiter", "arithmetic_operator", "logical_operator", "comparison_operator", "concatenation_operator"]:
+            if self.current_token.token_type not in ["loop_keyword","opening_switch_statement_delimiter", "print_keyword", "opening_conditional_statement_delimiter", "identifiers", "numbr_literal", "numbar_literal", "string_delimiter", "troof_literal", "input_keyword", "type_casting_delimiter", "arithmetic_operator", "logical_operator", "comparison_operator", "concatenation_operator"]:
                 # Error handling for invalid code block
                 # TODO: improve error handling for invalid code block ---- change error message
                 raise Exception(f"Syntax Error: Line {self.current_token.line_number + 1}\n\t Expected code block but got {self.current_token.token_type}")
@@ -741,7 +1110,7 @@ class SyntaxAnalyzer:
             codeblock_node = ParseTreeNode("<code-block>", self.parse_tree, self.current_token.line_number)
             self.parse_tree.add_child(codeblock_node)
             self.codeblock(codeblock_node)
-        
+
         # Check if the current token is the KTHXBYE keyword
         if self.check_if_token_matches_expected_token_types("program_end_delimiter"):
             end_delimiter_node = ParseTreeNode("<program-end-delimiter>", self.parse_tree, self.current_token.line_number)

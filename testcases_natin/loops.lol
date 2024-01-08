@@ -1,14 +1,14 @@
 HAI
-
+WAZZUP
     I HAS A x
     I HAS A y
-    
+BUHBYE
     VISIBLE "Enter x: "
     GIMMEH x
 
     y R 0
 
-    IM IN YR inc UPPIN YR y WILE BOTH SAEM y AN SMALLR OF x AN years
+    IM IN YR inc UPPIN YR z WILE BOTH SAEM y AN SMALLR OF x AN years
         VISIBLE y
     IM OUTTA YR inc
 

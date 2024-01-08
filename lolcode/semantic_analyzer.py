@@ -25,7 +25,7 @@ class SemanticAnalyzer:
             print(f'\t{symbol}: {self.final_symbol_table.symbols[symbol].symbolClassification} - {self.final_symbol_table.symbols[symbol].symbolValue}')
             symbol_table.append((symbol, self.final_symbol_table.symbols[symbol].symbolValue))
         return symbol_table
-    
+
     def type_cast_to_numbr_or_numbar(self, symbol : SymbolEntity):
         # Returns a SymbolEntity with the same symbolClassification but with a symbolValue of type NUMBR or NUMBAR
         if symbol.symbolClassification == "TROOF":
@@ -40,8 +40,8 @@ class SemanticAnalyzer:
                 else:
                     return SymbolEntity("NUMBR", int(symbol.symbolValue))
             except:
-                raise Exception(f"Cannot cast {symbol.symbolValue} to NUMBR or NUMBAR")
-    
+                raise Exception(f"Error in line {symbol.line_number + 1}: Cannot cast {symbol.symbolValue} to NUMBR or NUMBAR")
+
     def type_cast_to_troof(self, symbol : SymbolEntity):
         # Returns a SymbolEntity with the same symbolClassification but with a symbolValue of type TROOF
         if symbol.symbolClassification == "NUMBR" or symbol.symbolClassification == "NUMBAR":
@@ -55,7 +55,7 @@ class SemanticAnalyzer:
             else:
                 return SymbolEntity("TROOF", "WIN")
         else:
-            raise Exception(f"Cannot cast {symbol.symbolValue} to TROOF")
+            raise Exception(f"Error in line {symbol.line_number + 1}: Cannot cast {symbol.symbolValue} to TROOF")
 
     def troof_to_boolean(self, symbol : SymbolEntity):
         # Returns a boolean value of the symbolValue
@@ -72,7 +72,7 @@ class SemanticAnalyzer:
         for node in self.parse_tree.children:
             # TODO: Remove this for debugging purposes ONLY
             print(f'Current node: {node.value}')
-            
+
             # TODO: add function before HAI and after KTHXBYE and make it the if for this control flow statement
             if node.value == "<program-start-delimiter>":
                 if node.children[0].value == "HAI" and len(node.children) == 1:
@@ -85,8 +85,8 @@ class SemanticAnalyzer:
                 if node.children[0].value == "KTHXBYE" and len(node.children) == 1:
                     continue
             else:
-                raise Exception(f"Syntax Error: Line {node.line_number + 1}\n")
-        
+                raise Exception(f"Error in Line {node.line_number + 1}: Expected variable declaration or code block but got {node.value}\n")
+
         # TODO: remove this for debugging purposes ONLY
         print(f'Finished evaluating the parse tree\n')
 
@@ -104,13 +104,13 @@ class SemanticAnalyzer:
                 return SymbolEntity("TROOF", "FAIL")
         elif literal_value.value == "<noob-literal>":
             return SymbolEntity("NOOB", "NOOB")
-            
+
     def evaluate_another_variable_value(self, variable_value):
         if not self.final_symbol_table.check_if_symbol_exists(variable_value.value):
-            raise Exception(f"Variable {variable_value.value} has not been declared")
+            raise Exception(f"Error in line {variable_value.line_number + 1}: Variable {variable_value.value} has not been declared")
         else:
             return self.final_symbol_table.get_symbol(variable_value.value)
-        
+
     def evaluate_arithmetic_expression(self, arithmetic_expression):
         # Get the two operands before performing the respective prefix arithmetic operation
         operand1 = self.evaluate_var_value(arithmetic_expression.children[1].children[0])
@@ -243,7 +243,7 @@ class SemanticAnalyzer:
             operand1 = self.type_cast_to_numbr_or_numbar(operand1)
             operand2 = self.type_cast_to_numbr_or_numbar(operand2)
 
-        # if numbr/numbar compared to yarn/troof/noob and vice versa, it should always be false
+        # If numbr/numbar compared to yarn/troof/noob and vice versa, it should always be false
         if operand1.symbolClassification == "NUMBR" or operand1.symbolClassification == "NUMBAR":
             if operand2.symbolClassification == "YARN" or operand2.symbolClassification == "TROOF" or operand2.symbolClassification == "NOOB":
                 return SymbolEntity("TROOF", "FAIL")
@@ -274,14 +274,24 @@ class SemanticAnalyzer:
         return SymbolEntity("YARN", concatenated_string)
 
     def evaluate_expression_value(self, expression_value):
+        result = None
+
         if expression_value.value == "<arithmetic-expression>":
-            return self.evaluate_arithmetic_expression(expression_value.children[0])
+            result = self.evaluate_arithmetic_expression(expression_value.children[0])
         elif expression_value.value == "<boolean-expression>":
-            return self.evaluate_boolean_expression(expression_value.children[0])
+            result = self.evaluate_boolean_expression(expression_value.children[0])
         elif expression_value.value == "<comparison-expression>":
-            return self.evaluate_comparison_expression(expression_value.children[0])
+            result = self.evaluate_comparison_expression(expression_value.children[0])
         elif expression_value.value == "<concatenation-expression>":
-            return self.evaluate_concatenation_expression(expression_value.children[1])
+            result = self.evaluate_concatenation_expression(expression_value.children[1])
+
+        if result is None:
+            raise Exception(f"Error in line {expression_value.line_number + 1}: Expected arithmetic, boolean, comparison, or concatenation expression but got {expression_value.value}\n")
+        
+        # Update the IT
+        self.final_symbol_table.update_symbol("IT", result)
+
+        return result
 
     def evaluate_var_value_type(self, variable_type):
         if variable_type.value == "<literal-value>":
@@ -310,7 +320,7 @@ class SemanticAnalyzer:
                 
                 # Check if the variable is already declared
                 if self.final_symbol_table.check_if_symbol_exists(symbol_identifier):
-                    raise Exception(f"Variable {symbol_identifier} has already been declared")
+                    raise Exception(f"Error in line {variable_information.line_number + 1}: Variable {symbol_identifier} has already been declared")
 
             elif variable_information.value == "<var-initialization>":
                 symbol_value = self.evaluate_var_value(variable_information.children[1]) # Pass the <var-value> node
@@ -328,7 +338,7 @@ class SemanticAnalyzer:
                 self.evaluate_var(variable_declaration_node) # Pass the <var> node
             else:
                 # TODO: improve error prompting
-                raise Exception(f"Syntax error: Line {variable_declaration_node.line_number + 1}\n")
+                raise Exception(f"Error in line {variable_declaration_node.line_number + 1}: Expected variable but got {variable_declaration_node.value}\n")
 
     def evaluate_print_loop(self, print_loop):
         string_to_print = ""
@@ -360,7 +370,7 @@ class SemanticAnalyzer:
                 string_symbol_entity = self.evaluate_print_loop(print_information)
 
         if string_symbol_entity is None:
-            raise Exception(f"Syntax error: Line {print_statement.line_number + 1}\n")
+            raise Exception(f"Error in line {print_statement.line_number + 1}: Expected <print-loop> but got {print_statement.children[1].value}")
     
         
         if self.suppress_newline_print:
@@ -389,7 +399,7 @@ class SemanticAnalyzer:
                 symbol_name = input_information.children[0].value
                 
                 if not self.final_symbol_table.check_if_symbol_exists(symbol_name):
-                    raise Exception(f"Variable {symbol_name} does not exist")
+                    raise Exception(f"Error in line {input_statement.line_number + 1}: Variable {symbol_name} has not been declared")
                 
         self.final_symbol_table.update_symbol(symbol_name, SymbolEntity("YARN", user_input))
 
@@ -402,7 +412,11 @@ class SemanticAnalyzer:
                 symbol_name = assignment_information.children[0].value
                 
                 if not self.final_symbol_table.check_if_symbol_exists(symbol_name):
-                    raise Exception(f"Variable {symbol_name} does not exist")
+                    raise Exception(f"Error in line {assignment_statement.line_number + 1}: Variable {symbol_name} does not exist")
+
+                symbol_value = self.final_symbol_table.get_symbol(symbol_name)
+                
+                self.final_symbol_table.update_symbol("IT", symbol_value) # Update the IT
             elif assignment_information.value == "<var-value>":
                 symbol_value = self.evaluate_var_value(assignment_information)
             elif assignment_information.value == "<type-casting-assignment-operator>":
@@ -415,7 +429,7 @@ class SemanticAnalyzer:
                     symbol_value = self.evaluate_casting(self.evaluate_var_value(assignment_information.children[1]), self.evaluate_data_type(assignment_information.children[2]))
 
         if symbol_name is None or symbol_value is None:
-            raise Exception(f"Syntax error: Line {assignment_statement.line_number + 1}\n")
+            raise Exception(f"Error in line {assignment_statement.line_number + 1}: Expected <identifier> or <var-value> but got {assignment_statement.children[1].value}")
 
         self.final_symbol_table.update_symbol(symbol_name, symbol_value)
 
@@ -435,7 +449,7 @@ class SemanticAnalyzer:
                 try:
                     return SymbolEntity("NUMBR", int(symbol_to_cast.symbolValue))
                 except:
-                    raise Exception(f"Cannot cast {symbol_to_cast.symbolValue} to NUMBR")
+                    raise Exception(f"Error in line {symbol_to_cast.line_number + 1}: Cannot cast {symbol_to_cast.symbolValue} to NUMBR")
         elif new_data_type == "NUMBAR":
             if symbol_to_cast.symbolClassification == "TROOF":
                 if symbol_to_cast.symbolValue == "WIN":
@@ -448,7 +462,7 @@ class SemanticAnalyzer:
                 try:
                     return SymbolEntity("NUMBAR", float(symbol_to_cast.symbolValue))
                 except:
-                    raise Exception(f"Cannot cast {symbol_to_cast.symbolValue} to NUMBAR")
+                    raise Exception(f"Error in line {symbol_to_cast.line_number + 1}: Cannot cast {symbol_to_cast.symbolValue} to NUMBAR")
         elif new_data_type == "YARN":
             if symbol_to_cast.symbolClassification == "NOOB":
                 return SymbolEntity("YARN", "")
@@ -459,10 +473,10 @@ class SemanticAnalyzer:
         elif new_data_type == "TROOF":
             if symbol_to_cast.symbolClassification == "NOOB":
                 return SymbolEntity("TROOF", "FAIL")
-            
+
             if symbol_to_cast.symbolClassification == "NUMBR" and symbol_to_cast.symbolValue == 0:
                 return SymbolEntity("TROOF", "FAIL")
-                
+
             if symbol_to_cast.symbolClassification == "NUMBAR" and symbol_to_cast.symbolValue == 0.0:
                 return SymbolEntity("TROOF", "FAIL")
 
@@ -473,8 +487,90 @@ class SemanticAnalyzer:
         elif new_data_type == "NOOB":
             return SymbolEntity("NOOB", "NOOB")
         else:
-            raise Exception(f"Invalid data type {new_data_type}")
-                
+            raise Exception(f"Error in line {symbol_to_cast.line_number + 1}: Invalid data type {new_data_type}")
+
+    def evaluate_true_switch_statement(self, index, true_switch_statement, switch_statements):
+        self.evaluate_code_block(true_switch_statement.children[2])
+
+        if true_switch_statement.children[-1].value == "<switch-statement-break-delimiter>":
+            return
+        elif true_switch_statement.value == "<default-loop>":
+            return
+        elif index == len(switch_statements.children):
+            return
+        else:
+            self.evaluate_true_switch_statement(index + 1, switch_statements.children[index + 1], switch_statements)
+
+    def evaluate_switch_statements(self, switch_conditional_statements):
+        for index, switch_conditional_statement in enumerate(switch_conditional_statements.children):
+            if switch_conditional_statement.value == "<omg-loop>":
+                if str(self.final_symbol_table.get_symbol("IT").symbolValue) == str(self.evaluate_literal_value(switch_conditional_statement.children[1].children[0]).symbolValue):
+                    self.evaluate_true_switch_statement(index, switch_conditional_statement, switch_conditional_statements)
+
+                    break
+            if switch_conditional_statement.value == "<default-loop>":
+                self.evaluate_code_block(switch_conditional_statement.children[1])
+
+    def evaluate_switch_case(self, switch_statement):
+        for switch_information in switch_statement.children:
+            if switch_information.value == "<switch-delimiter>":
+                self.evaluate_switch_statements(switch_information)
+
+    def evaluate_conditional_statements(self, conditional_statements):
+        # Typecast the IT to TROOF if it is not
+        if self.final_symbol_table.get_symbol("IT").symbolClassification != "TROOF":
+            self.final_symbol_table.update_symbol("IT", self.type_cast_to_troof(self.final_symbol_table.get_symbol("IT")))
+
+        for conditional_statement in conditional_statements.children:
+            if str(self.final_symbol_table.get_symbol("IT").symbolValue) == "WIN" : # if true, go to true's codeblock
+                if conditional_statement.value == "<if-statement>":
+                    self.evaluate_code_block(conditional_statement.children[1])
+
+                    break
+            else:
+                if conditional_statement.value == "<mebbe-loop>":
+                    self.evaluate_expression_value(conditional_statement.children[1].children[0])
+
+                    if str(self.final_symbol_table.get_symbol("IT").symbolValue) == "WIN":
+                        self.evaluate_code_block(conditional_statement.children[2])
+
+                        break
+                elif conditional_statement.value == "<else-statement>":
+                    self.evaluate_code_block(conditional_statement.children[1])
+
+                    break
+
+    def evaluate_conditional_case(self, conditional_statement):
+        self.evaluate_conditional_statements(conditional_statement)
+
+    def evaluate_loop_statements(self, loop_statements):
+        # flag for loop operation; True for increment, False for decrement
+        op_flag = False
+        for loop_statement in loop_statements.children:
+            print(f'HERE : \t{loop_statement.value}')
+            if loop_statement.value == "<loop-operation>":
+                if loop_statement.children[0].value == "UPPIN":
+                    op_flag = True
+                    print("INCREMENT")
+                else:
+                    print("DECREMENT")
+
+            if loop_statement.value == "<variable-name>":
+                # Check if the variable is already declared
+                identifier = loop_statement.children[0].children[0].value
+                print("IDENTIFIER : ", identifier)
+                if not self.final_symbol_table.check_if_symbol_exists(identifier):
+                    raise Exception(f"Error in line {loop_statement.line_number + 1}: Variable {identifier} has not been declared")
+
+                # Check if the variable is of type NUMBR
+                # TODO: fix
+                if self.type_cast_to_troof(self.final_symbol_table.get_symbol(identifier)).symbolClassification == "NUMBR":
+                    raise Exception(f"Error in line {loop_statement.line_number + 1}: Variable {identifier} is not of type NUMBR")
+
+
+    def evaluate_loop(self, loop_statement):
+        self.evaluate_loop_statements(loop_statement)
+
     def evaluate_code_block(self, code_block):
         for statement in code_block.children:
             print(f'\t{statement.value}')
@@ -485,6 +581,10 @@ class SemanticAnalyzer:
                 self.evaluate_input(statement)
             elif statement.value == "<assignment>":
                 self.evaluate_assignment(statement)
+            elif statement.value ==  "<var-value>":
+                self.evaluate_var_value(statement)
+            elif statement.value in ["<arithmetic-expression>", "<boolean-expression>", "<comparison-expression>", "<concatenation-expression>"]:
+                self.evaluate_expression_value(statement)
             elif statement.value == "<casting>":
                 symbol_value = None
 
@@ -495,3 +595,9 @@ class SemanticAnalyzer:
                     symbol_value = self.evaluate_casting(self.final_symbol_table.evaluate_var_value(statement.children[1]), self.evaluate_data_type(statement.children[2]))
 
                 self.final_symbol_table.update_symbol("IT", symbol_value)
+            elif statement.value == "<switch>":
+                self.evaluate_switch_case(statement)
+            elif statement.value == "<conditional-statement>":
+                self.evaluate_conditional_case(statement)
+            elif statement.value == "<loop-statement>":
+                self.evaluate_loop(statement)
