@@ -2,9 +2,9 @@
     This file is the main file of the project. 
     This is an interpreter for the LOLCode programming language created using Python.
 """
-
+import os
 import tkinter as tk
-from tkinter import ttk, filedialog, simpledialog
+from tkinter import ttk, filedialog, simpledialog, messagebox
 from lolcode.interpreter import Interpreter
 from ttkthemes import ThemedStyle
 
@@ -12,6 +12,11 @@ class GUI:
     def __init__(self, root):
         self.root = root
         self.root.title("LOLCode Interpreter")
+        self.file_path = None
+        self.new_file_path = None
+
+        # Bind the function to the WM_DELETE_WINDOW event
+        root.protocol("WM_DELETE_WINDOW", self.on_close)
 
         # Apply theme for the GUI
         style = ThemedStyle(root)
@@ -74,7 +79,64 @@ class GUI:
                 code = file.read()
                 self.text_editor.delete(1.0, tk.END)
                 self.text_editor.insert(tk.END, code)
-        self.file_path = file_path
+            self.file_path = file_path
+        
+            # Get the code from the text editor
+            code = self.text_editor.get(1.0, tk.END)
+
+            # Save the code to a file
+            self.new_file_path = "temp.lol"
+            with open(self.new_file_path, 'w') as file:
+                file.write(code)
+
+            print(f"File Path: {self.new_file_path}")
+    
+    # Function for saving upon closing the window
+    def on_close(self):
+        # Check if text editor is empty
+        if self.text_editor.get(1.0, tk.END) == "\n":
+            self.root.destroy()
+        else:
+            # Check if the user opened a file
+            if self.file_path:
+                # Check if contents of temp.lol is the same as contents of the file opened
+                with open(self.file_path, 'r') as file:
+                    code = file.read().strip()
+                with open(self.new_file_path, 'r') as file:
+                    new_code = file.read().strip()
+                    if code == new_code:
+                        self.root.destroy()
+                    else:
+                        # Ask the user if they want to save the changes
+                        save_changes = messagebox.askyesnocancel("Save Changes", "Do you want to save the changes?")
+                        # Open the file explorer if the user wants to save the changes
+                        if save_changes:
+                            self.new_file_path = filedialog.asksaveasfilename(filetypes=[("lol files", "*.lol"), ("All files", "*.*")])
+                            if self.new_file_path:
+                                with open(self.new_file_path, 'w') as file:
+                                    file.write(self.text_editor.get(1.0, tk.END))
+                                self.root.destroy()
+                        elif save_changes is None:
+                            pass
+                        else:
+                            self.root.destroy()
+            # If no file was opened, ask the user if they want to save the changes
+            else:
+                save_changes = messagebox.askyesnocancel("Save Changes", "Do you want to save the changes?")
+                # Open the file explorer if the user wants to save the changes
+                if save_changes:
+                    self.new_file_path = filedialog.asksaveasfilename(filetypes=[("lol files", "*.lol"), ("All files", "*.*")])
+                    if self.new_file_path:
+                        with open(self.new_file_path, 'w') as file:
+                            file.write(self.text_editor.get(1.0, tk.END))
+                        self.root.destroy()
+                elif save_changes is None:
+                    pass
+                else:
+                    self.root.destroy()
+        # Delete the temp.lol file
+        os.remove(self.new_file_path)
+                    
 
     # Function to get input from the user
     def input_callback(self):
@@ -97,16 +159,16 @@ class GUI:
             code = self.text_editor.get(1.0, tk.END)
 
             # Save the code to a file
-            self.file_path = "temp.lol"
-            with open(self.file_path, 'w') as file:
+            self.new_file_path = "temp.lol"
+            with open(self.new_file_path, 'w') as file:
                 file.write(code)
 
-            print(f"File Path: {self.file_path}")
-
+            print(f"File Path: {self.new_file_path}")
+            
             # Initialize the lexical analyzer
             interpreter = Interpreter()
-
-            interpreter.read_file(self.file_path)  # Read the file
+            print(f"before reading file the file path is: {self.new_file_path}")
+            interpreter.read_file(self.new_file_path)  # Read the file
             print("File read successfully")
 
             tokens = interpreter.run_lexer()  # Run the lexical analyzer and get the tokens
@@ -143,7 +205,7 @@ class GUI:
             self.console_text.config(state=tk.NORMAL)
             self.console_text.insert(tk.END, error_info)
             self.console_text.config(state=tk.DISABLED)
-
+        
 # Run the GUI
 if __name__ == "__main__":
     root = tk.Tk()
