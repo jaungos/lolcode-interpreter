@@ -9,8 +9,8 @@ def main():
     # Initialize the lexical analyzer
     interpreter = Interpreter()
 
-    # interpreter.read_file("project-testcases/08_switch.lol")
-    interpreter.read_file("testcases_natin/loops.lol")
+    interpreter.read_file("project-testcases/09_loops.lol")
+    # interpreter.read_file("testcases_natin/loops.lol")
 
     interpreter.run_lexer() # Run the lexical analyzer
 

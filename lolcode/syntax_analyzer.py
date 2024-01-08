@@ -678,9 +678,7 @@ class SyntaxAnalyzer:
             self.valid_type(casting_node)
         else:
             self.valid_type(casting_node)
-            
         
-
     # Specialized codeblock for control flow statements
     def flow_control_codeblock(self, node_parent):
         print(f'current token: {self.current_token.token_type} at line {self.current_token.line_number + 1}')
@@ -701,6 +699,10 @@ class SyntaxAnalyzer:
         # Check if the current token is an identifier for the assignment keyword/typecasting assignment keyword
         if self.check_if_token_matches_expected_token_types("identifiers"):
             self.assignment_statement(node_parent)
+
+        # Check if the current token is a literal value
+        if self.current_token.token_type in ["numbr_literal", "numbar_literal", "string_delimiter", "troof_literal"]:
+            self.var_value(node_parent)
 
         # Check if the current token is the input keyword
         if self.check_if_token_matches_expected_token_types("input_keyword"):
@@ -882,6 +884,10 @@ class SyntaxAnalyzer:
         if self.check_if_token_matches_expected_token_types("identifiers"):
             self.assignment_statement(node_parent)
 
+        # Check if the current token is a literal value
+        if self.current_token.token_type in ["numbr_literal", "numbar_literal", "string_delimiter", "troof_literal"]:
+            self.var_value(node_parent)
+
         # Check if the current token is the input keyword
         if self.check_if_token_matches_expected_token_types("input_keyword"):
             self.input_statement(node_parent)
@@ -977,6 +983,13 @@ class SyntaxAnalyzer:
         loop_statement_node.add_child(codeblock_statement_node)
 
         self.loop_codeblock(codeblock_statement_node)
+        
+        # Check for optional GTFO keyword
+        if self.check_if_token_matches_expected_token_types("switch_statement_break_delimiter"):
+            loop_statement_break_delimiter_node = ParseTreeNode("<loop-statement-break-delimiter>", loop_statement_node, self.current_token.line_number)
+            loop_statement_node.add_child(loop_statement_break_delimiter_node)
+            self.addParseTreeNode(loop_statement_break_delimiter_node)
+            self.consume_current_token()
 
         # Get IM OUTTA YR
         if self.check_if_token_matches_expected_token_types("loop_exit_keyword"):
@@ -1039,6 +1052,10 @@ class SyntaxAnalyzer:
         if self.check_if_token_matches_expected_token_types("identifiers"):
             self.assignment_statement(node_parent)
 
+        # Check if the current token is a literal value
+        if self.current_token.token_type in ["numbr_literal", "numbar_literal", "string_delimiter", "troof_literal"]:
+            self.var_value(node_parent)
+
         # Check if the current token is the input keyword
         if self.check_if_token_matches_expected_token_types("input_keyword"):
             self.input_statement(node_parent)
@@ -1058,7 +1075,7 @@ class SyntaxAnalyzer:
         # Check if the current token is still not the program end delimiter
         if not self.check_if_token_matches_expected_token_types("program_end_delimiter"):
             # TODO: add the other keywords
-            if self.current_token.token_type not in ["loop_keyword","opening_switch_statement_delimiter", "print_keyword", "opening_conditional_statement_delimiter", "identifiers", "input_keyword", "type_casting_delimiter", "arithmetic_operator", "logical_operator", "comparison_operator", "concatenation_operator"]:
+            if self.current_token.token_type not in ["loop_keyword","opening_switch_statement_delimiter", "print_keyword", "opening_conditional_statement_delimiter", "identifiers", "numbr_literal", "numbar_literal", "string_delimiter", "troof_literal", "input_keyword", "type_casting_delimiter", "arithmetic_operator", "logical_operator", "comparison_operator", "concatenation_operator"]:
                 # Error handling for invalid code block
                 # TODO: improve error handling for invalid code block ---- change error message
                 raise Exception(f"Syntax Error: Line {self.current_token.line_number + 1}\n\t Expected code block but got {self.current_token.token_type}")

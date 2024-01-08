@@ -8,11 +8,8 @@ BUHBYE
 
     y R 0
 
-    IM IN YR inc UPPIN YR y WILE BOTH SAEM y AN SMALLR OF x AN years
+    IM IN YR inc UPPIN YR z WILE BOTH SAEM y AN SMALLR OF x AN years
         VISIBLE y
-        IM IN YR dec NERFIN YR y TIL BOTH SAEM y AN 0
-            VISIBLE y
-        IM OUTTA YR dec
     IM OUTTA YR inc
 
     VISIBLE "---"
