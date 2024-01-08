@@ -17,6 +17,7 @@ py -m venv env
 env/Scripts/activate # Open a new cmd terminal in the same directory
 
 pip install tk
+pip install ttkthemes
 ```
 
 ## Running

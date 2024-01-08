@@ -5,6 +5,7 @@ WAZZUP
     I HAS A choice2
     I HAS A num1
     I HAS A num2
+    I HAS A input
 BUHBYE
     VISIBLE "Calculator"
     VISIBLE "1. Add"
@@ -18,33 +19,33 @@ BUHBYE
 
     choice
     WTF?
-        OMG 1
+        OMG "1"
 			VISIBLE "Enter birth year: "
 			GIMMEH input
 			VISIBLE DIFF OF 2022 AN input
 			GTFO
 
-        OMG 2
+        OMG "2"
             VISIBLE "Enter bill cost: "
 			GIMMEH input
 			VISIBLE "Tip: " + PRODUKT OF input AN 0.1
 			GTFO
 
-        OMG 3
+        OMG "3"
             VISIBLE "Enter first number: "
             GIMMEH num1
             VISIBLE "Enter second number: "
             GIMMEH num2
             VISIBLE PRODUKT OF num1 AN num2
             GTFO
-        OMG 4
+        OMG "4"
             VISIBLE "Enter first number: "
             GIMMEH num1
             VISIBLE "Enter second number: "
             GIMMEH num2
             VISIBLE QUOSHUNT OF num1 AN num2
             GTFO
-        OMG 0
+        OMG "0"
             VISIBLE "KTHXBYE"
             GTFO
         OMGWTF

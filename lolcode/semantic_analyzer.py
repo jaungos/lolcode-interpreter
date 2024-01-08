@@ -13,6 +13,7 @@ class SemanticAnalyzer:
         self.final_symbol_table = Lol_Symbol_Table()
         self.input_callback = input_callback
         self.suppress_newline_print = False
+        self.print_statements = []
 
     def run_semantic_analyzer(self):
         self.evaluate()
@@ -70,9 +71,6 @@ class SemanticAnalyzer:
 
         # Evaluate the parse tree
         for node in self.parse_tree.children:
-            # TODO: Remove this for debugging purposes ONLY
-            print(f'Current node: {node.value}')
-
             # TODO: add function before HAI and after KTHXBYE and make it the if for this control flow statement
             if node.value == "<program-start-delimiter>":
                 if node.children[0].value == "HAI" and len(node.children) == 1:
@@ -85,10 +83,7 @@ class SemanticAnalyzer:
                 if node.children[0].value == "KTHXBYE" and len(node.children) == 1:
                     continue
             else:
-                raise Exception(f"Error in Line {node.line_number + 1}: Expected variable declaration or code block but got {node.value}\n")
-
-        # TODO: remove this for debugging purposes ONLY
-        print(f'Finished evaluating the parse tree\n')
+                raise Exception(f"Error in line {node.line_number + 1}: Expected variable declaration or code block but got {node.value}\n")
 
     def evaluate_literal_value(self, literal_value):
         if literal_value.value == "<yarn-literal>":
@@ -290,7 +285,7 @@ class SemanticAnalyzer:
         
         # Update the IT
         self.final_symbol_table.update_symbol("IT", result)
-
+        
         return result
 
     def evaluate_var_value_type(self, variable_type):
@@ -353,13 +348,7 @@ class SemanticAnalyzer:
     
     # Function for getting print statements
     def get_print_statements(self):
-        print_statements = []
-        for node in self.parse_tree.children:
-            if node.value == "<code-block>":
-                for statement in node.children:
-                    if statement.value == "<print>":
-                        print_statements.append(self.evaluate_print(statement))
-        return print_statements
+        return self.print_statements
 
     def evaluate_print(self, print_statement):
         string_symbol_entity = None
@@ -374,33 +363,35 @@ class SemanticAnalyzer:
     
         
         if self.suppress_newline_print:
-            print(f'{string_symbol_entity.symbolValue}', end='')
             self.suppress_newline_print = False
             to_print = (string_symbol_entity.symbolValue) 
         else:
-            print(f'{string_symbol_entity.symbolValue}')
+
             to_print = (string_symbol_entity.symbolValue + '\n')
 
         # Update the IT
         self.final_symbol_table.update_symbol("IT", string_symbol_entity)
+        
+        # Append to print statements
+        self.print_statements.append(to_print)
+
         return to_print
     
-    def trigger_callback(self):
-        user_input = self.input_callback()
+    def trigger_callback(self, symbol_name):
+        user_input = self.input_callback(symbol_name)
         return user_input
 
     def evaluate_input(self, input_statement):
         user_input = None
-
         for input_information in input_statement.children:
             if input_information.value == "<input-operator>":
-                user_input = self.trigger_callback()
+                pass
             elif input_information.value == "<identifier>":
                 symbol_name = input_information.children[0].value
-                
                 if not self.final_symbol_table.check_if_symbol_exists(symbol_name):
                     raise Exception(f"Error in line {input_statement.line_number + 1}: Variable {symbol_name} has not been declared")
-                
+                # Pass the symbol name to the callback function
+                user_input = self.trigger_callback(symbol_name)
         self.final_symbol_table.update_symbol(symbol_name, SymbolEntity("YARN", user_input))
 
     def evaluate_assignment(self, assignment_statement):
@@ -491,15 +482,17 @@ class SemanticAnalyzer:
 
     def evaluate_true_switch_statement(self, index, true_switch_statement, switch_statements):
         self.evaluate_code_block(true_switch_statement.children[2])
-
+        
         if true_switch_statement.children[-1].value == "<switch-statement-break-delimiter>":
             return
-        elif true_switch_statement.value == "<default-loop>":
+
+        if index + 1 == len(switch_statements.children):
             return
-        elif index == len(switch_statements.children):
+        
+        if switch_statements.children[index + 1].value == "<default-loop>":
             return
-        else:
-            self.evaluate_true_switch_statement(index + 1, switch_statements.children[index + 1], switch_statements)
+        
+        self.evaluate_true_switch_statement(index + 1, switch_statements.children[index + 1], switch_statements)
 
     def evaluate_switch_statements(self, switch_conditional_statements):
         for index, switch_conditional_statement in enumerate(switch_conditional_statements.children):
@@ -510,6 +503,8 @@ class SemanticAnalyzer:
                     break
             if switch_conditional_statement.value == "<default-loop>":
                 self.evaluate_code_block(switch_conditional_statement.children[1])
+                
+                break
 
     def evaluate_switch_case(self, switch_statement):
         for switch_information in switch_statement.children:
@@ -545,36 +540,121 @@ class SemanticAnalyzer:
 
     def evaluate_loop_statements(self, loop_statements):
         # flag for loop operation; True for increment, False for decrement
-        op_flag = False
+        isIncrement = None
+
+        # flag for loop condition; True for TIL, False for WILE
+        isTILLoop = None
+
         for loop_statement in loop_statements.children:
-            print(f'HERE : \t{loop_statement.value}')
+
             if loop_statement.value == "<loop-operation>":
                 if loop_statement.children[0].value == "UPPIN":
-                    op_flag = True
-                    print("INCREMENT")
+                    # change flag to increment
+                    isIncrement = True
+                elif loop_statement.children[0].value == "NERFIN":
+                    isIncrement = False
                 else:
-                    print("DECREMENT")
-
-            if loop_statement.value == "<variable-name>":
+                    raise Exception(f"Error in line {loop_statement.line_number + 1}: Expected UPPIN or NERFIN but got {loop_statement.children[0].value}")
+            elif loop_statement.value == "<variable-name>":
                 # Check if the variable is already declared
                 identifier = loop_statement.children[0].children[0].value
-                print("IDENTIFIER : ", identifier)
                 if not self.final_symbol_table.check_if_symbol_exists(identifier):
-                    raise Exception(f"Error in line {loop_statement.line_number + 1}: Variable {identifier} has not been declared")
+                    raise Exception(f"CHECKER: Error in line {loop_statement.line_number + 1}: Variable {identifier} has not been declared")
 
-                # Check if the variable is of type NUMBR
-                # TODO: fix
-                if self.type_cast_to_troof(self.final_symbol_table.get_symbol(identifier)).symbolClassification == "NUMBR":
-                    raise Exception(f"Error in line {loop_statement.line_number + 1}: Variable {identifier} is not of type NUMBR")
+                # Typecast the variable to NUMBR or NUMBAR if it is not
+                if self.final_symbol_table.get_symbol(identifier).symbolClassification != "NUMBR" and self.final_symbol_table.get_symbol(identifier).symbolClassification != "NUMBAR":
+                    self.final_symbol_table.update_symbol(identifier, self.type_cast_to_numbr_or_numbar(self.final_symbol_table.get_symbol(identifier)))
 
+            # get if TIL or WILE
+            elif loop_statement.value == "<loop-condition-keyword>":
+                if loop_statement.children[0].value == "TIL":
+                    isTILLoop = True
+                elif loop_statement.children[0].value == "WILE":
+                    isTILLoop = False
+                else:
+                    raise Exception(f"Error in line {loop_statement.line_number + 1}: Expected TIL or WILE but got {loop_statement.children[0].value}")
+            # Get the value of the loop condition
+            elif loop_statement.value == "<loop-condition-expression>":
+                # Store the loop condition
+                loop_condition = loop_statement.children[0]
+
+                # Get the value of the loop condition
+                self.evaluate_expression_value(loop_condition)
+
+                if isTILLoop:
+                    if str(self.final_symbol_table.get_symbol("IT").symbolValue) == "WIN":
+                        break # Break the loop as the condition is already true
+                elif isTILLoop == False:
+                    if str(self.final_symbol_table.get_symbol("IT").symbolValue) == "FAIL":
+                        break # Break the loop as the condition is already false
+            elif loop_statement.value == "<code-block-statement>":
+                if isTILLoop == True:
+                    # Execute loop as long as condition is False
+                    while str(self.final_symbol_table.get_symbol("IT").symbolValue) == "FAIL":
+                        if isIncrement == True:
+                            # Run the code block
+                            self.evaluate_code_block(loop_statement)
+
+                            # Increment
+                            if self.final_symbol_table.get_symbol(identifier).symbolClassification == "NUMBR":
+                                self.final_symbol_table.update_symbol(identifier, SymbolEntity("NUMBR", self.final_symbol_table.get_symbol(identifier).symbolValue + 1))
+                            elif self.final_symbol_table.get_symbol(identifier).symbolClassification == "NUMBAR":
+                                self.final_symbol_table.update_symbol(identifier, SymbolEntity("NUMBAR", self.final_symbol_table.get_symbol(identifier).symbolValue + 1.00))
+
+                            # Check if loop condition is still False
+                            self.evaluate_expression_value(loop_condition)
+                        else:
+                            # Run the code block
+                            self.evaluate_code_block(loop_statement)
+
+                            # Decrement
+                            if self.final_symbol_table.get_symbol(identifier).symbolClassification == "NUMBR":
+                                self.final_symbol_table.update_symbol(identifier, SymbolEntity("NUMBR", self.final_symbol_table.get_symbol(identifier).symbolValue - 1))
+                            elif self.final_symbol_table.get_symbol(identifier).symbolClassification == "NUMBAR":
+                                self.final_symbol_table.update_symbol(identifier, SymbolEntity("NUMBAR", self.final_symbol_table.get_symbol(identifier).symbolValue - 1.00))
+
+                            # Check if loop condition is still true
+                            self.evaluate_expression_value(loop_condition)
+
+                        # Check if a break statement is present
+                        if loop_statements.children[-3].value == "<loop-statement-break-delimiter>":
+                            break # Break the loop as a GTFO keyword is present
+                else:
+                    while str(self.final_symbol_table.get_symbol("IT").symbolValue) == "WIN": #While it is WIN, run
+                        if isIncrement == True:
+                            # Run the code block
+                            self.evaluate_code_block(loop_statement)
+
+                            # Increment
+                            if self.final_symbol_table.get_symbol(identifier).symbolClassification == "NUMBR":
+                                self.final_symbol_table.update_symbol(identifier, SymbolEntity("NUMBR", self.final_symbol_table.get_symbol(identifier).symbolValue + 1))
+                            elif self.final_symbol_table.get_symbol(identifier).symbolClassification == "NUMBAR":
+                                self.final_symbol_table.update_symbol(identifier, SymbolEntity("NUMBAR", self.final_symbol_table.get_symbol(identifier).symbolValue + 1.00))
+
+                            # Check if loop condition is still False
+                            self.evaluate_expression_value(loop_condition)
+                        else:
+                            # Run the code block
+                            self.evaluate_code_block(loop_statement)
+
+                            # Decrement
+                            if self.final_symbol_table.get_symbol(identifier).symbolClassification == "NUMBR":
+                                self.final_symbol_table.update_symbol(identifier, SymbolEntity("NUMBR", self.final_symbol_table.get_symbol(identifier).symbolValue - 1))
+                            elif self.final_symbol_table.get_symbol(identifier).symbolClassification == "NUMBAR":
+                                self.final_symbol_table.update_symbol(identifier, SymbolEntity("NUMBAR", self.final_symbol_table.get_symbol(identifier).symbolValue - 1.00))
+
+                            # Check if loop condition is still true
+                            self.evaluate_expression_value(loop_condition)
+
+                        # Check if a break statement is present
+                        if loop_statements.children[-3].value == "<loop-statement-break-delimiter>":
+                            break # Break the loop as a GTFO keyword is present
 
     def evaluate_loop(self, loop_statement):
         self.evaluate_loop_statements(loop_statement)
 
     def evaluate_code_block(self, code_block):
         for statement in code_block.children:
-            print(f'\t{statement.value}')
-            # TODO: complete all the possible statements
             if statement.value == "<print>":
                 self.evaluate_print(statement)
             elif statement.value == "<input>":
