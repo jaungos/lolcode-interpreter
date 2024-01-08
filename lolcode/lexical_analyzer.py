@@ -154,6 +154,11 @@ class LexicalAnalyzer:
                     raise Exception(f'ERROR: Missing TLDR for multi-line comments. Line {self.line_number}')
 
     def print_tokens(self):
+        token_tuples = []
         print("Tokens:")
         for token in self.symbol_table.get_tokens():
             print(f'\t{token.get_token_type()}: {token.get_lexeme()} in line {token.line_number + 1}')
+            # removes linebreak_delimiter tokens from the list of tokens to be returned
+            if token.get_token_type() != "linebreak_delimiter":
+                token_tuples.append((token.get_lexeme(), token.get_token_type()))
+        return token_tuples

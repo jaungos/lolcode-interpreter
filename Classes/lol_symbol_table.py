@@ -3,6 +3,8 @@
     This class is also used as a parse tree for the compiler.
 """
 
+
+
 class Lol_Symbol_Table:
     def __init__(self):
         self.tokens = []
@@ -28,4 +30,3 @@ class Lol_Symbol_Table:
     
     def update_symbol(self, lexeme, symbol):
         self.symbols[lexeme] = symbol
-    
