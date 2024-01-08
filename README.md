@@ -12,10 +12,10 @@ The program is a LOLCODE interpreter written in Python. It uses an object-orient
 ## Installing Dependencies 
 * For Windows, it should be run in a cmd terminal
 ```bash
-py -m venv env
+py -m venv env # create a new python virtual environment
 env/Scripts/activate # Open a new cmd terminal in the same directory
 
-curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py # install pip
 python get-pip.py
 
 pip install tk
@@ -24,7 +24,10 @@ pip install ttkthemes
 
 * For linux, open a bash terminal and have sudo privileges
 ```bash
-sudo apt install pip
+py -m venv env # create a new python virtual environment
+env/Scripts/activate # Open a new terminal in the same directory
+
+sudo apt install pip # install pip
 
 pip install tk
 pip install ttkthemes
