@@ -143,8 +143,9 @@ class GUI:
                     self.root.destroy()
 
     # Function to get input from the user
-    def input_callback(self):
-        retval = simpledialog.askstring("Input", "Enter input:")
+    def input_callback(self, symbol_name):
+        var_name = symbol_name
+        retval = simpledialog.askstring("Input", "Enter input for " + var_name + ":")
         return retval
 
     # Function to run the code
