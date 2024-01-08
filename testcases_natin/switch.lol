@@ -19,31 +19,16 @@ BUHBYE
     choice
     WTF?
         OMG 1
-            VISIBLE "Enter first number: "
-            GIMMEH num1
-            VISIBLE "Enter second number: "
-            GIMMEH num2
-            VISIBLE SUM OF num1 AN num2
-            VISIBLE "Enter your choice: "
-            GIMMEH choice2
-
-            choice2
-            WTF?
-                OMG 1
-                    VISIBLE "INNER LOOP Enter first number: "
-                    GIMMEH num1
-                    VISIBLE "Enter second number: "
-                    GIMMEH num2
-                    VISIBLE SUM OF num1 AN num2
-                    GTFO
-            OIC
+			VISIBLE "Enter birth year: "
+			GIMMEH input
+			VISIBLE DIFF OF 2022 AN input
+			GTFO
 
         OMG 2
-            VISIBLE "Enter first number: "
-            GIMMEH num1
-            VISIBLE "Enter second number: "
-            GIMMEH num2
-            VISIBLE DIFF OF num1 AN num2
+            VISIBLE "Enter bill cost: "
+			GIMMEH input
+			VISIBLE "Tip: " + PRODUKT OF input AN 0.1
+			GTFO
 
         OMG 3
             VISIBLE "Enter first number: "
@@ -66,8 +51,5 @@ BUHBYE
             VISIBLE "Invalid choice"
             GTFO
     OIC
-
-KTHXBYE
-
 
 KTHXBYE

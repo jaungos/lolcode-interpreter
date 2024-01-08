@@ -1,9 +1,9 @@
 HAI
-
+WAZZUP
     I HAS A choice
     I HAS A num1
     I HAS A num2
-
+BUHBYE
     VISIBLE "Calculator"
     VISIBLE "1. Add"
     VISIBLE "2. Subtract"

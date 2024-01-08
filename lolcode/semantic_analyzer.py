@@ -335,7 +335,7 @@ class SemanticAnalyzer:
                 self.evaluate_var(variable_declaration_node) # Pass the <var> node
             else:
                 # TODO: improve error prompting
-                raise Exception(f"Syntax error: Line {variable_declaration_node.line_number + 1}\n")
+                raise Exception(f"Syntax error: Line {variable_declaration_node.line_number + 1} Expected variable but got {variable_declaration_node.value}\n")
 
     def evaluate_print_loop(self, print_loop):
         string_to_print = ""
@@ -512,18 +512,22 @@ class SemanticAnalyzer:
             else:
                 if conditional_statement.value == "<mebbe-loop>":
                     self.evaluate_expression_value(conditional_statement.children[1].children[0])
-                    
+
                     if str(self.final_symbol_table.get_symbol("IT").symbolValue) == "WIN":
                         self.evaluate_code_block(conditional_statement.children[2])
-                        
+
                         break
                 elif conditional_statement.value == "<else-statement>":
                     self.evaluate_code_block(conditional_statement.children[1])
 
                     break
-            
+
     def evaluate_conditional_case(self, conditional_statement):
-        self.evaluate_conditional_statements(conditional_statement) 
+        self.evaluate_conditional_statements(conditional_statement)
+
+    def evaluate_loop(self, loop_statement):
+        for loop_information in loop_statement.children:
+            print(f'\t {loop_information.value}')
 
     def evaluate_code_block(self, code_block):
         for statement in code_block.children:
@@ -535,8 +539,6 @@ class SemanticAnalyzer:
                 self.evaluate_input(statement)
             elif statement.value == "<assignment>":
                 self.evaluate_assignment(statement)
-            elif statement.value ==  "<var-value>":
-                self.evaluate_var_value(statement)
             elif statement.value in ["<arithmetic-expression>", "<boolean-expression>", "<comparison-expression>", "<concatenation-expression>"]:
                 self.evaluate_expression_value(statement)
             elif statement.value == "<casting>":
@@ -553,3 +555,5 @@ class SemanticAnalyzer:
                 self.evaluate_switch_case(statement)
             elif statement.value == "<conditional-statement>":
                 self.evaluate_conditional_case(statement)
+            elif statement.value == "<loop>":
+                self.evaluate_loop(statement)
